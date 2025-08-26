@@ -11,11 +11,11 @@
       :type="type"
       @click="$emit('click', $event)"
     >
-      <BaseIcon v-if="leftIcon" :icon="leftIcon" :size="iconSize" :class="iconClasses" />
+      <BaseIcon v-if="leftIcon" :icon="leftIcon" :size="iconSize" />
       <span v-if="!iconOnly && (title || $slots.default)" class="button-text">
         <slot>{{ title }}</slot>
       </span>
-      <BaseIcon v-if="rightIcon" :icon="rightIcon" :size="iconSize" :class="iconClasses" />
+      <BaseIcon v-if="rightIcon" :icon="rightIcon" :size="iconSize" />
     </button>
   </BaseTooltip>
 </template>

@@ -436,7 +436,6 @@ const strokeWidth = ref(2)
 
 <style scoped>
 .design-system {
-  max-width: 1200px;
   margin: 0 auto;
   padding: var(--ds-spacing-2xl);
   background: var(--ds-background);

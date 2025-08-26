@@ -14,12 +14,6 @@
         :collision-padding="8"
       >
         <div v-if="isDesignSystem" class="tooltip-design-system">
-          <div class="tooltip-component-info">
-            <div class="component-name">{{ componentName }}</div>
-            <div class="component-props" v-if="componentProps">
-              {{ componentProps }}
-            </div>
-          </div>
           <div class="tooltip-code" v-if="showCode">
             <pre><code>{{ formattedCode }}</code></pre>
           </div>
@@ -69,7 +63,7 @@ const props = withDefaults(defineProps<BaseTooltipProps>(), {
 })
 
 // Проверяем, находимся ли мы в режиме дизайн-системы
-const isDesignSystem = ref(false)
+const isDesignSystem = ref(true)
 
 // Форматирование кода
 const formattedCode = computed(() => {
