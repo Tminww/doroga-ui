@@ -133,7 +133,7 @@ const iconColor = ref("")
     <h3 class="component-demo-title">Кнопки для приложения</h3>
     <div class="component-demo-content">
       <BaseButton title="Экспорт" left-icon="download" variant="secondary" size="lg"/>
-      <BaseButton :icon-only="true" left-icon="settings" variant="secondary"/>
+      <BaseButton title="Добавить" left-icon="plus"  size="lg"/>
       <BaseButton :icon-only="true" left-icon="settings" variant="success"/>
       <BaseButton :icon-only="true" left-icon="settings" variant="warning"/>
       <BaseButton :icon-only="true" left-icon="settings" variant="danger"/>

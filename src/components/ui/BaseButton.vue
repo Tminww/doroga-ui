@@ -77,12 +77,12 @@ const iconClasses = computed(() => ['button-icon', `button-icon--${props.size}`]
 }
 
 .base-button--md {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
 }
 
 .base-button--lg {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   font-size: 1rem;
 }
 
