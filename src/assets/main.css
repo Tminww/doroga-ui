@@ -1,5 +1,94 @@
+/* Импорт базовых стилей Vue */
 @import './base.css';
 
+/* Базовая настройка приложения */
 :root {
   padding: 10px;
+}
+
+/* Переопределение базовых стилей для интеграции с дизайн-системой */
+body {
+  background: var(--ds-background);
+  color: var(--ds-text-primary);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji';
+}
+
+/* Базовые стили для интерактивных элементов */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ds-border-focus);
+  outline-offset: 2px;
+}
+
+/* Стили для скроллбаров (Webkit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ds-surface-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ds-border-secondary);
+  border-radius: var(--ds-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-text-tertiary);
+}
+
+/* Стили для выделения текста */
+::selection {
+  background-color: var(--ds-primary-200);
+  color: var(--ds-primary-800);
+}
+
+/* Утилитарные классы */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }

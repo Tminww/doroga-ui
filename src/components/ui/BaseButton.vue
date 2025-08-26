@@ -1,26 +1,53 @@
 <template>
-  <button :class="buttonClasses" :disabled="disabled" @click="$emit('click', $event)">
-    <BaseIcon v-if="leftIcon" :icon="leftIcon" :class="iconClasses" />
-    <span v-if="$slots.default || title" class="button-text">
-      <slot>{{ title }}</slot>
-    </span>
-    <BaseIcon v-if="rightIcon" :icon="rightIcon" :class="iconClasses" />
-  </button>
+  <BaseTooltip
+    :content="tooltipContent"
+    component-name="BaseButton"
+    :component-props="tooltipProps"
+    :code="tooltipCode"
+  >
+    <button
+      :class="buttonClasses"
+      :disabled="disabled"
+      :type="type"
+      @click="$emit('click', $event)"
+    >
+      <BaseIcon v-if="leftIcon" :icon="leftIcon" :size="iconSize" :class="iconClasses" />
+      <span v-if="!iconOnly && (title || $slots.default)" class="button-text">
+        <slot>{{ title }}</slot>
+      </span>
+      <BaseIcon v-if="rightIcon" :icon="rightIcon" :size="iconSize" :class="iconClasses" />
+    </button>
+  </BaseTooltip>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import BaseIcon from './BaseIcon.vue'
+import BaseIcon, { type IconName } from './BaseIcon.vue'
+import BaseTooltip from './BaseTooltip.vue'
 
 export interface BaseButtonProps {
+  /** Вариант стиля кнопки */
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning'
+  /** Размер кнопки */
   size?: 'sm' | 'md' | 'lg'
-  title: string
-  leftIcon?: string
-  rightIcon?: string
+  /** Текст кнопки */
+  title?: string
+  /** Иконка слева */
+  leftIcon?: IconName
+  /** Иконка справа */
+  rightIcon?: IconName
+  /** Отображать только иконку без текста */
   iconOnly?: boolean
+  /** Заблокированное состояние */
   disabled?: boolean
+  /** Растянуть на всю ширину контейнера */
   fullWidth?: boolean
+  /** Тип кнопки для формы */
+  type?: 'button' | 'submit' | 'reset'
+  /** Дополнительные CSS классы */
+  class?: string
+  /** Описание для tooltip в продакшене */
+  tooltip?: string
 }
 
 const props = withDefaults(defineProps<BaseButtonProps>(), {
@@ -29,7 +56,12 @@ const props = withDefaults(defineProps<BaseButtonProps>(), {
   iconOnly: false,
   disabled: false,
   fullWidth: false,
+  type: 'button',
 })
+
+defineEmits<{
+  click: [event: MouseEvent]
+}>()
 
 const buttonClasses = computed(() => [
   'base-button',
@@ -40,9 +72,59 @@ const buttonClasses = computed(() => [
     'base-button--full-width': props.fullWidth,
     'base-button--disabled': props.disabled,
   },
+  props.class,
 ])
 
-const iconClasses = computed(() => ['button-icon', `button-icon--${props.size}`])
+const iconClasses = computed(() => ['button-icon'])
+
+const iconSize = computed(() => {
+  switch (props.size) {
+    case 'sm':
+      return 14
+    case 'lg':
+      return 20
+    default:
+      return 16
+  }
+})
+
+// Tooltip content для продакшена
+const tooltipContent = computed(() => {
+  return props.tooltip || `${props.title || 'Кнопка'} (${props.variant})`
+})
+
+// Props для отображения в дизайн-системе
+const tooltipProps = computed(() => {
+  const propsList = []
+
+  if (props.title) propsList.push(`title="${props.title}"`)
+  if (props.variant !== 'primary') propsList.push(`variant="${props.variant}"`)
+  if (props.size !== 'md') propsList.push(`size="${props.size}"`)
+  if (props.leftIcon) propsList.push(`left-icon="${props.leftIcon}"`)
+  if (props.rightIcon) propsList.push(`right-icon="${props.rightIcon}"`)
+  if (props.iconOnly) propsList.push(':icon-only="true"')
+  if (props.disabled) propsList.push(':disabled="true"')
+  if (props.fullWidth) propsList.push(':full-width="true"')
+  if (props.type !== 'button') propsList.push(`type="${props.type}"`)
+
+  return propsList.join('\n  ')
+})
+
+// Полный код компонента для tooltip
+const tooltipCode = computed(() => {
+  const hasProps = tooltipProps.value.length > 0
+  const hasSlot = !props.title && !!props.leftIcon // Примерная логика для слота
+
+  if (!hasProps && !hasSlot) {
+    return `<BaseButton title="${props.title || 'Button'}" />`
+  }
+
+  if (hasSlot) {
+    return `<BaseButton${hasProps ? `\n  ${tooltipProps.value}` : ''}\n>\n  ${props.title || 'Button Text'}\n</BaseButton>`
+  }
+
+  return `<BaseButton\n  ${tooltipProps.value}\n/>`
+})
 </script>
 
 <style scoped>
@@ -50,15 +132,21 @@ const iconClasses = computed(() => ['button-icon', `button-icon--${props.size}`]
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--ds-spacing-sm);
   border: 1px solid transparent;
-  border-radius: 0.5rem;
+  border-radius: var(--ds-radius-md);
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
   line-height: 1;
+  white-space: nowrap;
+}
+
+.base-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ds-border-focus);
 }
 
 .base-button:disabled {
@@ -72,84 +160,91 @@ const iconClasses = computed(() => ['button-icon', `button-icon--${props.size}`]
 
 /* Размеры */
 .base-button--sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.75rem;
+  padding: var(--ds-spacing-xs) var(--ds-spacing-md);
+  font-size: var(--ds-font-size-xs);
+  min-height: 1rem;
 }
 
 .base-button--md {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+  padding: var(--ds-spacing-sm) var(--ds-spacing-lg);
+  font-size: var(--ds-font-size-sm);
+  min-height: 1.25rem;
 }
 
 .base-button--lg {
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
+  padding: var(--ds-spacing-md) var(--ds-spacing-xl);
+  font-size: var(--ds-font-size-md);
+  min-height: 1.5rem;
 }
 
 /* Варианты */
 .base-button--primary {
-  background-color: #2563eb;
-  color: white;
-  border-color: #2563eb;
+  background-color: var(--ds-button-primary-bg);
+  color: var(--ds-button-primary-text);
+  border-color: var(--ds-button-primary-bg);
 }
 
 .base-button--primary:hover:not(:disabled) {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
+  background-color: var(--ds-button-primary-bg-hover);
+  border-color: var(--ds-button-primary-bg-hover);
 }
 
 .base-button--secondary {
-  background-color: white;
-  color: #374151;
-  border-color: #d1d5db;
+  background-color: var(--ds-button-secondary-bg);
+  color: var(--ds-button-secondary-text);
+  border-color: var(--ds-button-secondary-border);
 }
 
 .base-button--secondary:hover:not(:disabled) {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
+  background-color: var(--ds-button-secondary-bg-hover);
+  border-color: var(--ds-border-secondary);
 }
 
 .base-button--danger {
-  background-color: #dc2626;
-  color: white;
-  border-color: #dc2626;
+  background-color: var(--ds-button-danger-bg);
+  color: var(--ds-button-danger-text);
+  border-color: var(--ds-button-danger-bg);
 }
 
 .base-button--danger:hover:not(:disabled) {
-  background-color: #b91c1c;
-  border-color: #b91c1c;
+  background-color: var(--ds-button-danger-bg-hover);
+  border-color: var(--ds-button-danger-bg-hover);
 }
 
 .base-button--success {
-  background-color: #059669;
-  color: white;
-  border-color: #059669;
+  background-color: var(--ds-button-success-bg);
+  color: var(--ds-button-success-text);
+  border-color: var(--ds-button-success-bg);
 }
 
 .base-button--success:hover:not(:disabled) {
-  background-color: #047857;
-  border-color: #047857;
+  background-color: var(--ds-button-success-bg-hover);
+  border-color: var(--ds-button-success-bg-hover);
 }
 
 .base-button--warning {
-  background-color: #d97706;
-  color: white;
-  border-color: #d97706;
+  background-color: var(--ds-button-warning-bg);
+  color: var(--ds-button-warning-text);
+  border-color: var(--ds-button-warning-bg);
 }
 
 .base-button--warning:hover:not(:disabled) {
-  background-color: #b45309;
-  border-color: #b45309;
+  background-color: var(--ds-button-warning-bg-hover);
+  border-color: var(--ds-button-warning-bg-hover);
 }
 
 /* Иконочная кнопка */
 .base-button--icon-only {
-  padding: 0.5rem;
-  min-width: 2.5rem;
+  aspect-ratio: 1;
+  padding: var(--ds-spacing-sm);
 }
 
-.base-button--icon-only .button-text {
-  display: none;
+.base-button--icon-only.base-button--sm {
+  padding: var(--ds-spacing-xs);
+}
+
+.base-button--icon-only.base-button--lg {
+  padding: var(--ds-spacing-md);
 }
 
 /* Иконки */
@@ -157,23 +252,7 @@ const iconClasses = computed(() => ['button-icon', `button-icon--${props.size}`]
   flex-shrink: 0;
 }
 
-.button-icon--sm {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
-.button-icon--md {
-  width: 1rem;
-  height: 1rem;
-}
-
-.button-icon--lg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
 .button-text {
-  white-space: nowrap;
   font-weight: 500;
 }
 </style>

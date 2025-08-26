@@ -1,13 +1,18 @@
+<!-- src/App.vue -->
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { TooltipProvider } from 'reka-ui'
 import DesignSystem from './views/DesignSystem.vue'
 </script>
 
 <template>
-  <DesignSystem />
+  <TooltipProvider :delay-duration="400" :skip-delay-duration="150">
+    <DesignSystem />
+  </TooltipProvider>
 </template>
 
 <style scoped>
+/* Стили остаются теми же */
 header {
   line-height: 1.5;
   max-height: 100vh;
