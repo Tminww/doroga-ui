@@ -280,10 +280,18 @@
           <div class="example">
             <h4>Панель действий</h4>
             <div class="example-content">
-              <BaseButton title="Создать" left-icon="plus" variant="primary" />
-              <BaseButton title="Экспорт" left-icon="download" variant="secondary" />
-              <BaseButton :icon-only="true" left-icon="filter" variant="secondary" />
-              <BaseButton :icon-only="true" left-icon="settings" variant="secondary" />
+              <SettingsButton @click="console.log('SETTINGS CLICK')" />
+              <NotifyButton @click="console.log('Notify CLICK')" />
+              <AddButton @click="console.log('ADD CLICK')" />
+              <ExportButton @click="console.log('EXPORT CLICK')" />
+              <FilterButton @click="console.log('FILTER CLICK')" />
+              <UpdateButton @click="console.log('Update CLICK')" />
+              <ActionButton @click="console.log('ACTION CLICK')" />
+              <PrevButton @click="console.log('PREV CLICK')" />
+              <NextButton @click="console.log('NEXT CLICK')" />
+            </div>
+            <div class="example-content">
+              <SidebarButton />
             </div>
           </div>
 
@@ -354,7 +362,7 @@
                   class="radius-example"
                   :style="{ borderRadius: `var(--ds-radius-${radius})` }"
                 ></div>
-                <span class="radius-label">{{ radius }}</span>
+                <span class="radius-label"> {{ `--ds-radius-${radius}` }} </span>
               </div>
             </div>
           </div>
@@ -365,9 +373,12 @@
               <div v-for="shadow in shadows" :key="shadow" class="shadow-item">
                 <div
                   class="shadow-example"
-                  :style="{ boxShadow: `var(--ds-shadow-${shadow})` }"
+                  :style="{
+                    boxShadow: `var(--ds-shadow-${shadow})`,
+                    borderRadius: 'var(--ds-radius-lg)',
+                  }"
                 ></div>
-                <span class="shadow-label">{{ shadow }}</span>
+                <span class="shadow-label">{{ `--ds-shadow-${shadow}` }}</span>
               </div>
             </div>
           </div>
@@ -384,6 +395,16 @@ import BaseIcon from '@/components/ui/BaseIcon.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import DesignSystemProvider from '@/components/DesignSystemProvider.vue'
 import { type IconName } from '@/components/ui/BaseIcon.vue'
+import SettingsButton from '@/components/ui/SettingsButton.vue'
+import NotifyButton from '@/components/ui/NotifyButton.vue'
+import AddButton from '@/components/ui/AddButton.vue'
+import ExportButton from '@/components/ui/ExportButton.vue'
+import FilterButton from '@/components/ui/FilterButton.vue'
+import UpdateButton from '@/components/ui/UpdateButton.vue'
+import ActionButton from '@/components/ui/ActionButton.vue'
+import PrevButton from '@/components/ui/PrevButton.vue'
+import NextButton from '@/components/ui/NextButton.vue'
+import SidebarButton from '@/components/ui/SidebarButton.vue'
 // Данные для демонстрации
 const colorGroups = [
   { name: 'primary', label: 'Primary' },

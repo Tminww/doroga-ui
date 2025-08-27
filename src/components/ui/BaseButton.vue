@@ -1,10 +1,5 @@
 <template>
-  <BaseTooltip
-    :content="tooltipContent"
-    component-name="BaseButton"
-    :component-props="tooltipProps"
-    :code="tooltipCode"
-  >
+  <BaseTooltip :content="tooltip" :side="tooltipSide">
     <button
       :class="buttonClasses"
       :disabled="disabled"
@@ -48,6 +43,8 @@ export interface BaseButtonProps {
   class?: string
   /** Описание для tooltip в продакшене */
   tooltip?: string
+  /** Позиция tooltip относительно элемента */
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
 }
 
 const props = withDefaults(defineProps<BaseButtonProps>(), {
@@ -75,8 +72,6 @@ const buttonClasses = computed(() => [
   props.class,
 ])
 
-const iconClasses = computed(() => ['button-icon'])
-
 const iconSize = computed(() => {
   switch (props.size) {
     case 'sm':
@@ -86,44 +81,6 @@ const iconSize = computed(() => {
     default:
       return 16
   }
-})
-
-// Tooltip content для продакшена
-const tooltipContent = computed(() => {
-  return props.tooltip || `${props.title || 'Кнопка'} (${props.variant})`
-})
-
-// Props для отображения в дизайн-системе
-const tooltipProps = computed(() => {
-  const propsList = []
-
-  if (props.title) propsList.push(`title="${props.title}"`)
-  if (props.variant !== 'primary') propsList.push(`variant="${props.variant}"`)
-  if (props.size !== 'md') propsList.push(`size="${props.size}"`)
-  if (props.leftIcon) propsList.push(`left-icon="${props.leftIcon}"`)
-  if (props.rightIcon) propsList.push(`right-icon="${props.rightIcon}"`)
-  if (props.iconOnly) propsList.push(':icon-only="true"')
-  if (props.disabled) propsList.push(':disabled="true"')
-  if (props.fullWidth) propsList.push(':full-width="true"')
-  if (props.type !== 'button') propsList.push(`type="${props.type}"`)
-
-  return propsList.join('\n  ')
-})
-
-// Полный код компонента для tooltip
-const tooltipCode = computed(() => {
-  const hasProps = tooltipProps.value.length > 0
-  const hasSlot = !props.title && !!props.leftIcon // Примерная логика для слота
-
-  if (!hasProps && !hasSlot) {
-    return `<BaseButton title="${props.title || 'Button'}" />`
-  }
-
-  if (hasSlot) {
-    return `<BaseButton${hasProps ? `\n  ${tooltipProps.value}` : ''}\n>\n  ${props.title || 'Button Text'}\n</BaseButton>`
-  }
-
-  return `<BaseButton\n  ${tooltipProps.value}\n/>`
 })
 </script>
 

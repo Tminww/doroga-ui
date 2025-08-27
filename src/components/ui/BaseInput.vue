@@ -261,6 +261,7 @@ const tooltipCode = computed(() => {
   background-color: var(--ds-surface-secondary);
   color: var(--ds-text-tertiary);
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .base-input:readonly {

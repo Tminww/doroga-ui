@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import BaseButton from './BaseButton.vue'
+import { type BaseButtonProps } from './BaseButton.vue'
+
+const props = withDefaults(defineProps<BaseButtonProps>(), {
+  iconOnly: true,
+  leftIcon: 'settings',
+  variant: 'secondary',
+  tooltipSide: 'bottom',
+  tooltip: 'Настройки',
+})
+
+defineEmits<{
+  click: [event: MouseEvent]
+}>()
+</script>
+<template>
+  <BaseButton
+    @click="$emit('click', $event)"
+    :icon-only="iconOnly"
+    :left-icon="leftIcon"
+    :variant="variant"
+    :tooltip="tooltip"
+    :tooltip-side="tooltipSide"
+    :size="size"
+    :disabled="disabled"
+  />
+</template>
