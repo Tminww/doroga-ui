@@ -655,7 +655,7 @@ const strokeWidth = ref(2)
 }
 
 .color-info {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--ds-surface-secondary);
   backdrop-filter: blur(4px);
   border-radius: var(--ds-radius-sm);
   padding: var(--ds-spacing-xs);
