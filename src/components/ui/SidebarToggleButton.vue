@@ -2,12 +2,16 @@
 import BaseButton from './BaseButton.vue'
 import { type BaseButtonProps } from './BaseButton.vue'
 
-const props = withDefaults(defineProps<BaseButtonProps>(), {
+interface SettingsButtonProps extends BaseButtonProps {
+  // Add any new props specific to SettingsButton here
+  isCollapsed?: boolean
+}
+
+const props = withDefaults(defineProps<SettingsButtonProps>(), {
   iconOnly: true,
   leftIcon: 'bell',
   variant: 'ghost',
-  tooltipSide: 'bottom',
-  tooltip: 'Уведомления',
+  isCollapsed: false,
 })
 
 defineEmits<{
@@ -17,8 +21,9 @@ defineEmits<{
 <template>
   <BaseButton
     @click="$emit('click', $event)"
+    :icon-size="24"
     :icon-only="iconOnly"
-    :left-icon="leftIcon"
+    :left-icon="isCollapsed ? 'panel-left-open' : 'panel-left-close'"
     :variant="variant"
     :tooltip="tooltip"
     :tooltip-side="tooltipSide"

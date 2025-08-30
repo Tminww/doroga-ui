@@ -222,6 +222,9 @@
           <BaseButton title="Success" variant="success" />
           <BaseButton title="Warning" variant="warning" />
           <BaseButton title="Danger" variant="danger" />
+          <BaseButton variant="ghost" title="Ghost Button" />
+          <BaseButton variant="ghost" left-icon="settings" title="Settings" />
+          <BaseButton variant="ghost" left-icon="menu" icon-only />
         </div>
       </section>
 
@@ -384,6 +387,13 @@
           </div>
         </div>
       </section>
+
+      <section class="component-demo">
+        <h3 class="component-demo-title">Layouts</h3>
+        <div class="layout-demo">
+          <BaseLayout />
+        </div>
+      </section>
     </div>
   </DesignSystemProvider>
 </template>
@@ -405,6 +415,7 @@ import ActionButton from '@/components/ui/ActionButton.vue'
 import PrevButton from '@/components/ui/PrevButton.vue'
 import NextButton from '@/components/ui/NextButton.vue'
 import SidebarButton from '@/components/ui/SidebarButton.vue'
+import BaseLayout from '@/layouts/BaseLayout.vue'
 // Данные для демонстрации
 const colorGroups = [
   { name: 'primary', label: 'Primary' },
@@ -456,6 +467,10 @@ const strokeWidth = ref(2)
 </script>
 
 <style scoped>
+.layout-demo {
+  height: 100vh;
+  overflow: hidden;
+}
 .design-system {
   margin: 0 auto;
   padding: var(--ds-spacing-2xl);

@@ -22,9 +22,11 @@ import BaseTooltip from './BaseTooltip.vue'
 
 export interface BaseButtonProps {
   /** Вариант стиля кнопки */
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning'
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'ghost'
   /** Размер кнопки */
   size?: 'sm' | 'md' | 'lg'
+
+  iconSize?: number
   /** Текст кнопки */
   title?: string
   /** Иконка слева */
@@ -39,6 +41,10 @@ export interface BaseButtonProps {
   fullWidth?: boolean
   /** Тип кнопки для формы */
   type?: 'button' | 'submit' | 'reset'
+  /** Выравнивание содержимого кнопки */
+  align?: 'left' | 'center' | 'right'
+  /** Программное управление активным состоянием */
+  active?: boolean
   /** Дополнительные CSS классы */
   class?: string
   /** Описание для tooltip в продакшене */
@@ -54,6 +60,8 @@ const props = withDefaults(defineProps<BaseButtonProps>(), {
   disabled: false,
   fullWidth: false,
   type: 'button',
+  align: 'center',
+  active: false,
 })
 
 defineEmits<{
@@ -64,15 +72,20 @@ const buttonClasses = computed(() => [
   'base-button',
   `base-button--${props.variant}`,
   `base-button--${props.size}`,
+  `base-button--align-${props.align}`,
   {
     'base-button--icon-only': props.iconOnly,
     'base-button--full-width': props.fullWidth,
     'base-button--disabled': props.disabled,
+    'base-button--active': props.active,
   },
   props.class,
 ])
 
 const iconSize = computed(() => {
+  if (props.iconSize) {
+    return props.iconSize
+  }
   switch (props.size) {
     case 'sm':
       return 14
@@ -146,8 +159,14 @@ const iconSize = computed(() => {
   border-color: var(--ds-button-primary-bg-hover);
 }
 
+.base-button--primary.base-button--active {
+  background-color: var(--ds-button-primary-bg-hover);
+  border-color: var(--ds-button-primary-bg-hover);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .base-button--secondary {
-  background-color: var(--ds-button-secondary-bg);
+  background-color: var(--ds-button-hover-bg);
   color: var(--ds-button-secondary-text);
   border-color: var(--ds-button-secondary-border);
 }
@@ -155,6 +174,12 @@ const iconSize = computed(() => {
 .base-button--secondary:hover:not(:disabled) {
   background-color: var(--ds-button-secondary-bg-hover);
   border-color: var(--ds-border-secondary);
+}
+
+.base-button--secondary.base-button--active {
+  background-color: var(--ds-button-ghost-bg-active);
+  color: var(--ds-button-ghost-text-active);
+  border-color: var(--ds-button-ghost-border-active);
 }
 
 .base-button--danger {
@@ -168,6 +193,12 @@ const iconSize = computed(() => {
   border-color: var(--ds-button-danger-bg-hover);
 }
 
+.base-button--danger.base-button--active {
+  background-color: var(--ds-button-danger-bg-hover);
+  border-color: var(--ds-button-danger-bg-hover);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .base-button--success {
   background-color: var(--ds-button-success-bg);
   color: var(--ds-button-success-text);
@@ -179,6 +210,12 @@ const iconSize = computed(() => {
   border-color: var(--ds-button-success-bg-hover);
 }
 
+.base-button--success.base-button--active {
+  background-color: var(--ds-button-success-bg-hover);
+  border-color: var(--ds-button-success-bg-hover);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .base-button--warning {
   background-color: var(--ds-button-warning-bg);
   color: var(--ds-button-warning-text);
@@ -188,6 +225,45 @@ const iconSize = computed(() => {
 .base-button--warning:hover:not(:disabled) {
   background-color: var(--ds-button-warning-bg-hover);
   border-color: var(--ds-button-warning-bg-hover);
+}
+
+.base-button--warning.base-button--active {
+  background-color: var(--ds-button-warning-bg-hover);
+  border-color: var(--ds-button-warning-bg-hover);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ghost вариант */
+.base-button--ghost {
+  background-color: transparent;
+  color: var(--ds-text-primary);
+  border-color: transparent;
+}
+
+.base-button--ghost:hover:not(:disabled) {
+  background-color: var(--ds-button-ghost-bg-hover);
+  border-color: var(--ds-button-ghost-border-hover);
+}
+
+.base-button--ghost:active:not(:disabled),
+.base-button--ghost:focus:not(:disabled),
+.base-button--ghost.base-button--active {
+  background-color: var(--ds-button-ghost-bg-active);
+  color: var(--ds-button-ghost-text-active);
+  border-color: var(--ds-button-ghost-border-active);
+}
+
+/* Выравнивание содержимого */
+.base-button--align-left {
+  justify-content: flex-start;
+}
+
+.base-button--align-center {
+  justify-content: center;
+}
+
+.base-button--align-right {
+  justify-content: flex-end;
 }
 
 /* Иконочная кнопка */

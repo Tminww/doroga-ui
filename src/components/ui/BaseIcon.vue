@@ -24,6 +24,9 @@ import {
   Filter,
   LayoutDashboard,
   Menu,
+  Minus,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   RefreshCw,
   ScrollText,
@@ -66,6 +69,9 @@ const ICON_MAP = {
   user: User,
   users: Users,
   x: X,
+  'panel-left-close': PanelLeftClose,
+  'panel-left-open': PanelLeftOpen,
+  minus: Minus,
 } as const
 
 // Экспортируем тип для использования в других компонентах
