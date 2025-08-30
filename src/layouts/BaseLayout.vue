@@ -162,25 +162,25 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'directions',
         text: 'Направления',
-        icon: 'file-text',
+        icon: 'waypoints',
         route: '/directions',
       },
       {
         id: 'samples',
         text: 'Образцы',
-        icon: 'test-tube',
+        icon: 'test-tube-diagonal',
         route: '/samples',
       },
       {
         id: 'protocols',
         text: 'Протоколы',
-        icon: 'scroll-text',
+        icon: 'clipboard-list',
         route: '/protocols',
       },
       {
         id: 'results',
         text: 'Результаты',
-        icon: 'activity',
+        icon: 'layout-list',
         route: '/results',
       },
       {
@@ -203,7 +203,7 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'divisions',
         text: 'Подразделения',
-        icon: 'building',
+        icon: 'hospital',
         route: '/divisions',
       },
       {
@@ -220,13 +220,13 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'research-goals',
         text: 'Цели исследования',
-        icon: 'target',
+        icon: 'goal',
         route: '/research-goals',
       },
       {
         id: 'sample-types',
         text: 'Типы образцов',
-        icon: 'beaker',
+        icon: 'test-tubes',
         route: '/sample-types',
       },
       {
@@ -238,13 +238,13 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'protocol-types',
         text: 'Типы протоколов',
-        icon: 'clipboard-list',
+        icon: 'files',
         route: '/protocol-types',
       },
       {
         id: 'objects',
         text: 'Объекты',
-        icon: 'settings',
+        icon: 'building',
         route: '/objects',
       },
     ],
