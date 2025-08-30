@@ -394,6 +394,23 @@
           <BaseLayout />
         </div>
       </section>
+      <section class="component-demo">
+        <h3 class="component-demo-title">Таблицы</h3>
+        <div class="component-demo-content">
+          <BaseTable
+            :data="tableData"
+            :columns="tableColumns"
+            title="Пользователи"
+            searchable
+            :page-size="20"
+            @row-click="handleRowClick"
+          >
+            <template #actions>
+              <BaseButton variant="primary">Добавить</BaseButton>
+            </template>
+          </BaseTable>
+        </div>
+      </section>
     </div>
   </DesignSystemProvider>
 </template>
@@ -416,7 +433,77 @@ import PrevButton from '@/components/ui/PrevButton.vue'
 import NextButton from '@/components/ui/NextButton.vue'
 import SidebarButton from '@/components/ui/SidebarButton.vue'
 import BaseLayout from '@/layouts/BaseLayout.vue'
+import BaseTable from '@/components/ui/BaseTable.vue'
 // Данные для демонстрации
+
+import { h } from 'vue'
+
+const tableColumns = [
+  {
+    accessorKey: 'id',
+    id: 'id',
+    header: 'ID',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'name',
+    id: 'name',
+    header: 'Имя',
+    cell: (info) => h('span', info.getValue()),
+  },
+  {
+    accessorKey: 'email',
+    id: 'email',
+    header: 'Email',
+  },
+  {
+    accessorKey: 'role',
+    id: 'role',
+    header: 'Роль',
+  },
+  {
+    accessorKey: 'createdAt',
+    id: 'createdAt',
+    header: 'Дата регистрации',
+  },
+]
+
+const tableData = ref([
+  { id: 1, name: 'Иван Петров', email: 'ivan@example.com', role: 'Админ', createdAt: '2024-03-10' },
+  {
+    id: 2,
+    name: 'Анна Смирнова',
+    email: 'anna@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-04-05',
+  },
+  {
+    id: 3,
+    name: 'Сергей Иванов',
+    email: 'sergey@example.com',
+    role: 'Модератор',
+    createdAt: '2024-06-22',
+  },
+  {
+    id: 4,
+    name: 'Ольга Кузнецова',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 5,
+    name: 'Дмитрий Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+])
+
+const handleRowClick = (row: any) => {
+  console.log('Клик по строке:', row)
+}
+
 const colorGroups = [
   { name: 'primary', label: 'Primary' },
   { name: 'gray', label: 'Gray' },

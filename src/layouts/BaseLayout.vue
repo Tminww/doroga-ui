@@ -177,6 +177,41 @@ const sidebarCategories: SidebarCategory[] = [
         icon: 'scroll-text',
         route: '/protocols',
       },
+      {
+        id: 'results',
+        text: 'Результаты',
+        icon: 'activity',
+        route: '/results',
+      },
+      {
+        id: 'conclusions',
+        text: 'Заключения',
+        icon: 'file-check',
+        route: '/conclusions',
+      },
+    ],
+  },
+  {
+    title: 'Персонал и структура',
+    items: [
+      {
+        id: 'doctors',
+        text: 'Врачи',
+        icon: 'user-check',
+        route: '/doctors',
+      },
+      {
+        id: 'divisions',
+        text: 'Подразделения',
+        icon: 'building',
+        route: '/divisions',
+      },
+      {
+        id: 'users',
+        text: 'Пользователи',
+        icon: 'users',
+        route: '/users',
+      },
     ],
   },
   {
@@ -193,6 +228,24 @@ const sidebarCategories: SidebarCategory[] = [
         text: 'Типы образцов',
         icon: 'beaker',
         route: '/sample-types',
+      },
+      {
+        id: 'indicators',
+        text: 'Показатели',
+        icon: 'bar-chart',
+        route: '/indicators',
+      },
+      {
+        id: 'protocol-types',
+        text: 'Типы протоколов',
+        icon: 'clipboard-list',
+        route: '/protocol-types',
+      },
+      {
+        id: 'objects',
+        text: 'Объекты',
+        icon: 'settings',
+        route: '/objects',
       },
     ],
   },

@@ -9,17 +9,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
+import { computed, defineComponent, h, type Component } from 'vue'
 import {
   Activity,
   AlertTriangle,
+  BarChart2,
+  BarChart3,
+  BarChart4,
+  BarChartBig,
   Beaker,
   Bell,
+  Building,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   Download,
   Edit,
+  FileCheck,
   FileText,
   Filter,
   LayoutDashboard,
@@ -37,11 +44,14 @@ import {
   TrendingDown,
   TrendingUp,
   User,
+  UserCheck,
   Users,
   X,
   type LucideIcon,
 } from 'lucide-vue-next'
+import SvgIcon from '@jamescoyle/vue-icon'
 
+import { mdiDoctor } from '@mdi/js'
 // Создаем строго типизированную карту иконок
 const ICON_MAP = {
   activity: Activity,
@@ -72,6 +82,13 @@ const ICON_MAP = {
   'panel-left-close': PanelLeftClose,
   'panel-left-open': PanelLeftOpen,
   minus: Minus,
+  'file-check': FileCheck,
+  'user-check': UserCheck,
+  building: Building,
+  'bar-chart': BarChart2,
+  'clipboard-list': ClipboardList,
+  // Пример использования иконки из Material Design Icons
+  doctor: mdiDoctor,
 } as const
 
 // Экспортируем тип для использования в других компонентах
@@ -99,6 +116,15 @@ const props = withDefaults(defineProps<BaseIconProps>(), {
 // Получаем компонент иконки с проверкой типов
 const iconComponent = computed((): Component => {
   const IconComponent = ICON_MAP[props.icon]
+
+  if (typeof IconComponent === 'string') {
+    return defineComponent({
+      components: { SvgIcon },
+      setup() {
+        return () => h(SvgIcon, { type: 'mdi', path: IconComponent })
+      },
+    })
+  }
   if (!IconComponent) {
     console.warn(`Icon "${props.icon}" not found. Available icons:`, Object.keys(ICON_MAP))
     return ICON_MAP.x // Fallback иконка

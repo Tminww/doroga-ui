@@ -26,6 +26,7 @@ defineEmits<{
   <BaseButton
     @click="$emit('click', $event)"
     :icon-only="iconOnly"
+    :icon-size="18"
     :left-icon="leftIcon"
     :variant="isCollapsed ? 'secondary' : 'ghost'"
     :align="isCollapsed ? 'center' : 'left'"
