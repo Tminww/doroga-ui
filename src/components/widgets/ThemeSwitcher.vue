@@ -232,7 +232,7 @@ onMounted(() => {
   border-radius: var(--ds-radius-md);
   display: flex;
   align-items: center;
-  height: 25px;
+  height: 30px;
   padding: 0 30px 0 10px;
   margin-bottom: 5px;
   position: relative;
