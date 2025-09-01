@@ -3,12 +3,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'home', component: () => import('@/App.vue') },
+    { path: '/', name: 'dashboard', component: () => import('@/views/DesignSystemView.vue') },
     {
-      path: '/design-system',
-      name: 'designSystem',
+      path: '/directions',
+      name: 'directions',
 
-      component: () => import('@/views/DesignSystem.vue'),
+      component: () => import('@/views/MainView.vue'),
     },
   ],
 })

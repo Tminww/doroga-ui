@@ -61,6 +61,7 @@ const props = withDefaults(defineProps<BaseTooltipProps>(), {
   animation-duration: 400ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
+  z-index: var(--ds-z-tooltip);
 }
 :deep(.tooltip-content)[data-state='delayed-open'][data-side='top'] {
   animation-name: slideDownAndFade;

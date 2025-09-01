@@ -1,14 +1,15 @@
 <!-- src/App.vue -->
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import { TooltipProvider } from 'reka-ui'
-import DesignSystem from './views/DesignSystem.vue'
+import { RouterView } from 'vue-router'
+import BaseLayout from './layouts/BaseLayout.vue'
 </script>
 
 <template>
-  <TooltipProvider :delay-duration="400" :skip-delay-duration="150">
-    <DesignSystem />
-  </TooltipProvider>
+  <BaseLayout>
+    <template #main>
+      <RouterView />
+    </template>
+  </BaseLayout>
 </template>
 
 <style scoped>

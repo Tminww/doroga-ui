@@ -1,138 +1,24 @@
-<template>
-  <div class="layout">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-content">
-        <div class="header-left">
-          <SidebarToggleButton
-            variant="ghost"
-            icon-only
-            :is-collapsed="isCollapsed"
-            @click="toggleSidebar"
-          />
-          <h1 class="header-title">{{ appTitle }}</h1>
-        </div>
-        <div class="header-right">
-          <!-- Здесь можно добавить дополнительные элементы: уведомления, профиль и т.д. -->
-          <BaseButton variant="ghost" icon-only left-icon="bell" />
-          <BaseButton variant="ghost" icon-only left-icon="user" />
-        </div>
-      </div>
-    </header>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" :class="{ collapsed: isCollapsed }">
-      <nav class="sidebar-nav">
-        <div v-for="category in sidebarCategories" :key="category.title" class="sidebar-category">
-          <h3 v-if="!isCollapsed" class="sidebar-category-title">
-            {{ category.title }}
-          </h3>
-
-          <div class="sidebar-items">
-            <SidebarButton
-              v-for="item in category.items"
-              :title="item.text"
-              :left-icon="item.icon"
-              :key="item.id"
-              class="sidebar-item"
-              :tooltip="item.text"
-              :active="activeItem === item.id"
-              :is-collapsed="isCollapsed"
-              @click="selectItem(item)"
-            >
-            </SidebarButton>
-          </div>
-        </div>
-      </nav>
-    </aside>
-
-    <!-- Main Content с скроллом -->
-    <main class="main-content">
-      <div class="container">
-        <h1>{{ currentPageTitle }}</h1>
-        <p>Активная страница: {{ activeItem }}</p>
-        <p>Состояние сайдбара: {{ isCollapsed ? 'свернут' : 'развернут' }}</p>
-
-        <!-- Содержимое страниц можно отображать через слот -->
-        <slot>
-          <div class="default-content">
-            <h2>Добро пожаловать</h2>
-            <p>Выберите раздел в боковой панели для навигации.</p>
-          </div>
-          <div class="default-content">
-            <h2>Welcome</h2>
-            <p>
-              The connection() context behaves like the Connection object context: at the end of the
-              block, if there is a transaction open, it will be committed if the context is exited
-              normally, or rolled back if the context is exited with an exception. See Transaction
-              contexts for details. The pool manages a certain amount of connections (between
-              min_size and max_size). If the pool has a connection ready in its state, it is served
-              immediately to the connection() caller, otherwise the caller is put in a queue and is
-              served a connection as soon as it's available. If instead of threads your application
-              uses async code you can use the AsyncConnectionPool instead and use the async and
-              await keywords with the methods requiring them:
-            </p>
-          </div>
-          <div class="default-content">
-            <h2>Welcome</h2>
-            <p>
-              The connection() context behaves like the Connection object context: at the end of the
-              block, if there is a transaction open, it will be committed if the context is exited
-              normally, or rolled back if the context is exited with an exception. See Transaction
-              contexts for details. The pool manages a certain amount of connections (between
-              min_size and max_size). If the pool has a connection ready in its state, it is served
-              immediately to the connection() caller, otherwise the caller is put in a queue and is
-              served a connection as soon as it's available. If instead of threads your application
-              uses async code you can use the AsyncConnectionPool instead and use the async and
-              await keywords with the methods requiring them:
-            </p>
-          </div>
-          <div class="default-content">
-            <h2>Welcome</h2>
-            <p>
-              The connection() context behaves like the Connection object context: at the end of the
-              block, if there is a transaction open, it will be committed if the context is exited
-              normally, or rolled back if the context is exited with an exception. See Transaction
-              contexts for details. The pool manages a certain amount of connections (between
-              min_size and max_size). If the pool has a connection ready in its state, it is served
-              immediately to the connection() caller, otherwise the caller is put in a queue and is
-              served a connection as soon as it's available. If instead of threads your application
-              uses async code you can use the AsyncConnectionPool instead and use the async and
-              await keywords with the methods requiring them:
-            </p>
-          </div>
-          <div class="default-content">
-            <h2>Welcome</h2>
-            <p>
-              The connection() context behaves like the Connection object context: at the end of the
-              block, if there is a transaction open, it will be committed if the context is exited
-              normally, or rolled back if the context is exited with an exception. See Transaction
-              contexts for details. The pool manages a certain amount of connections (between
-              min_size and max_size). If the pool has a connection ready in its state, it is served
-              immediately to the connection() caller, otherwise the caller is put in a queue and is
-              served a connection as soon as it's available. If instead of threads your application
-              uses async code you can use the AsyncConnectionPool instead and use the async and
-              await keywords with the methods requiring them:
-            </p>
-          </div>
-        </slot>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { TooltipProvider } from 'reka-ui'
+import { useRouter } from 'vue-router'
+
 import SidebarButton from '@/components/ui/SidebarButton.vue'
 import SidebarToggleButton from '@/components/ui/SidebarToggleButton.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseIcon, { type IconName } from '@/components/ui/BaseIcon.vue'
+import { type IconName } from '@/components/ui/BaseIcon.vue'
+import BaseSelect from '@/components/ui/BaseSelect.vue'
+import ThemeSwitcher from '@/components/widgets/ThemeSwitcher.vue'
+import BaseAvatar from '@/components/ui/BaseAvatar.vue'
+import SettingsButton from '@/components/ui/SettingsButton.vue'
+import NotifyButton from '@/components/ui/NotifyButton.vue'
+import AboutUser from '@/components/widgets/AboutUser.vue'
 
 interface SidebarItem {
   id: string
   text: string
   icon: IconName
-  route?: string
+  routeName?: string
 }
 
 interface SidebarCategory {
@@ -140,6 +26,7 @@ interface SidebarCategory {
   items: SidebarItem[]
 }
 
+const router = useRouter()
 const activeItem = ref('dashboard')
 const isCollapsed = ref(false)
 const appTitle = ref('ЛИС Дорога')
@@ -152,7 +39,7 @@ const sidebarCategories: SidebarCategory[] = [
         id: 'dashboard',
         text: 'Панель управления',
         icon: 'layout-dashboard',
-        route: '/dashboard',
+        routeName: 'dashboard',
       },
     ],
   },
@@ -163,31 +50,31 @@ const sidebarCategories: SidebarCategory[] = [
         id: 'directions',
         text: 'Направления',
         icon: 'waypoints',
-        route: '/directions',
+        routeName: 'directions',
       },
       {
         id: 'samples',
         text: 'Образцы',
         icon: 'test-tube-diagonal',
-        route: '/samples',
+        routeName: 'samples',
       },
       {
         id: 'protocols',
         text: 'Протоколы',
         icon: 'clipboard-list',
-        route: '/protocols',
+        routeName: 'protocols',
       },
       {
         id: 'results',
         text: 'Результаты',
         icon: 'layout-list',
-        route: '/results',
+        routeName: 'results',
       },
       {
         id: 'conclusions',
         text: 'Заключения',
         icon: 'file-check',
-        route: '/conclusions',
+        routeName: 'conclusions',
       },
     ],
   },
@@ -198,19 +85,19 @@ const sidebarCategories: SidebarCategory[] = [
         id: 'doctors',
         text: 'Врачи',
         icon: 'user-check',
-        route: '/doctors',
+        routeName: 'doctors',
       },
       {
         id: 'divisions',
         text: 'Подразделения',
         icon: 'hospital',
-        route: '/divisions',
+        routeName: 'divisions',
       },
       {
         id: 'users',
         text: 'Пользователи',
         icon: 'users',
-        route: '/users',
+        routeName: 'users',
       },
     ],
   },
@@ -221,31 +108,31 @@ const sidebarCategories: SidebarCategory[] = [
         id: 'research-goals',
         text: 'Цели исследования',
         icon: 'goal',
-        route: '/research-goals',
+        routeName: 'research-goals',
       },
       {
         id: 'sample-types',
         text: 'Типы образцов',
         icon: 'test-tubes',
-        route: '/sample-types',
+        routeName: 'sample-types',
       },
       {
         id: 'indicators',
         text: 'Показатели',
         icon: 'bar-chart',
-        route: '/indicators',
+        routeName: 'indicators',
       },
       {
         id: 'protocol-types',
         text: 'Типы протоколов',
         icon: 'files',
-        route: '/protocol-types',
+        routeName: 'protocol-types',
       },
       {
         id: 'objects',
         text: 'Объекты',
         icon: 'building',
-        route: '/objects',
+        routeName: 'objects',
       },
     ],
   },
@@ -267,19 +154,140 @@ const toggleSidebar = () => {
 
 const selectItem = (item: SidebarItem) => {
   activeItem.value = item.id
-  console.log('Выбран элемент:', item.text)
+  console.log('Выбран элемент:', item.text, item.routeName)
   // Здесь можно добавить навигацию:
-  // if (item.route) router.push(item.route)
+  if (item.routeName) {
+    router.push({ name: item.routeName })
+  }
 }
-
-// Экспортируем для использования в других компонентах
-defineExpose({
-  activeItem,
-  isCollapsed,
-  selectItem,
-  toggleSidebar,
-})
 </script>
+<template>
+  <TooltipProvider :delay-duration="400" :skip-delay-duration="150">
+    <div class="layout">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div class="header-left">
+            <SidebarToggleButton
+              variant="ghost"
+              icon-only
+              :is-collapsed="isCollapsed"
+              @click="toggleSidebar"
+            />
+            <h1 class="header-title">{{ appTitle }}</h1>
+          </div>
+          <div class="header-right">
+            <!-- Здесь можно добавить дополнительные элементы: уведомления, профиль и т.д. -->
+            <ThemeSwitcher />
+            <NotifyButton />
+            <SettingsButton />
+
+            <AboutUser />
+          </div>
+        </div>
+      </header>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" :class="{ collapsed: isCollapsed }">
+        <nav class="sidebar-nav">
+          <div v-for="category in sidebarCategories" :key="category.title" class="sidebar-category">
+            <h3 v-if="!isCollapsed" class="sidebar-category-title">
+              {{ category.title }}
+            </h3>
+
+            <div class="sidebar-items">
+              <SidebarButton
+                v-for="item in category.items"
+                :title="item.text"
+                :left-icon="item.icon"
+                :key="item.id"
+                class="sidebar-item"
+                :tooltip="item.text"
+                :active="activeItem === item.id"
+                :is-collapsed="isCollapsed"
+                @click="selectItem(item)"
+              >
+              </SidebarButton>
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main Content с скроллом -->
+      <main class="main-content">
+        <div class="container">
+          <h1>{{ currentPageTitle }}</h1>
+          <p>Активная страница: {{ activeItem }}</p>
+          <p>Состояние сайдбара: {{ isCollapsed ? 'свернут' : 'развернут' }}</p>
+
+          <!-- Содержимое страниц можно отображать через слот -->
+          <slot name="main">
+            <div class="default-content">
+              <h2>Добро пожаловать</h2>
+              <p>Выберите раздел в боковой панели для навигации.</p>
+            </div>
+            <div class="default-content">
+              <h2>Welcome</h2>
+              <p>
+                The connection() context behaves like the Connection object context: at the end of
+                the block, if there is a transaction open, it will be committed if the context is
+                exited normally, or rolled back if the context is exited with an exception. See
+                Transaction contexts for details. The pool manages a certain amount of connections
+                (between min_size and max_size). If the pool has a connection ready in its state, it
+                is served immediately to the connection() caller, otherwise the caller is put in a
+                queue and is served a connection as soon as it's available. If instead of threads
+                your application uses async code you can use the AsyncConnectionPool instead and use
+                the async and await keywords with the methods requiring them:
+              </p>
+            </div>
+            <div class="default-content">
+              <h2>Welcome</h2>
+              <p>
+                The connection() context behaves like the Connection object context: at the end of
+                the block, if there is a transaction open, it will be committed if the context is
+                exited normally, or rolled back if the context is exited with an exception. See
+                Transaction contexts for details. The pool manages a certain amount of connections
+                (between min_size and max_size). If the pool has a connection ready in its state, it
+                is served immediately to the connection() caller, otherwise the caller is put in a
+                queue and is served a connection as soon as it's available. If instead of threads
+                your application uses async code you can use the AsyncConnectionPool instead and use
+                the async and await keywords with the methods requiring them:
+              </p>
+            </div>
+            <div class="default-content">
+              <h2>Welcome</h2>
+              <p>
+                The connection() context behaves like the Connection object context: at the end of
+                the block, if there is a transaction open, it will be committed if the context is
+                exited normally, or rolled back if the context is exited with an exception. See
+                Transaction contexts for details. The pool manages a certain amount of connections
+                (between min_size and max_size). If the pool has a connection ready in its state, it
+                is served immediately to the connection() caller, otherwise the caller is put in a
+                queue and is served a connection as soon as it's available. If instead of threads
+                your application uses async code you can use the AsyncConnectionPool instead and use
+                the async and await keywords with the methods requiring them:
+              </p>
+            </div>
+            <div class="default-content">
+              <h2>Welcome</h2>
+              <p>
+                The connection() context behaves like the Connection object context: at the end of
+                the block, if there is a transaction open, it will be committed if the context is
+                exited normally, or rolled back if the context is exited with an exception. See
+                Transaction contexts for details. The pool manages a certain amount of connections
+                (between min_size and max_size). If the pool has a connection ready in its state, it
+                is served immediately to the connection() caller, otherwise the caller is put in a
+                queue and is served a connection as soon as it's available. If instead of threads
+                your application uses async code you can use the AsyncConnectionPool instead and use
+                the async and await keywords with the methods requiring them:
+              </p>
+            </div>
+          </slot>
+        </div>
+      </main>
+    </div>
+  </TooltipProvider>
+</template>
 
 <style scoped>
 .layout {
@@ -291,7 +299,7 @@ defineExpose({
   grid-template-columns: auto 1fr;
   height: 100vh;
   overflow: hidden;
-  border: 1px solid var(--ds-border);
+  /* border: 1px solid var(--ds-border); */
 }
 
 /* Header */
@@ -344,7 +352,7 @@ defineExpose({
 }
 
 .sidebar.collapsed {
-  width: 4rem;
+  width: 4.5rem;
 }
 
 .sidebar-header {
@@ -452,7 +460,7 @@ defineExpose({
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   padding: min(30px, 7%);
 }
 

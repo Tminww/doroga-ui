@@ -20,9 +20,11 @@ import {
   Beaker,
   Bell,
   Building,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   ClipboardList,
   Download,
   Edit,
@@ -36,6 +38,8 @@ import {
   LayoutList,
   Menu,
   Minus,
+  Monitor,
+  Moon,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
@@ -43,6 +47,7 @@ import {
   ScrollText,
   Search,
   Settings,
+  Sun,
   Target,
   TestTube,
   TestTube2,
@@ -69,6 +74,7 @@ const ICON_MAP = {
   'chevron-down': ChevronDown,
   'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
+  'chevron-up': ChevronUp,
   download: Download,
   edit: Edit,
   'file-text': FileText,
@@ -103,6 +109,10 @@ const ICON_MAP = {
   'bar-chart': BarChart2,
   'clipboard-list': ClipboardList,
   waypoints: Waypoints,
+  check: Check,
+  sun: Sun,
+  moon: Moon,
+  monitor: Monitor,
   // Пример использования иконки из Material Design Icons
   doctor: mdiDoctor,
 } as const
@@ -125,7 +135,7 @@ export interface BaseIconProps {
 
 const props = withDefaults(defineProps<BaseIconProps>(), {
   icon: 'x',
-  size: 24,
+  size: 16,
   strokeWidth: 2,
 })
 

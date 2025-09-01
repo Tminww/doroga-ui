@@ -5,7 +5,7 @@ import { type BaseButtonProps } from './BaseButton.vue'
 const props = withDefaults(defineProps<BaseButtonProps>(), {
   iconOnly: true,
   leftIcon: 'bell',
-  variant: 'ghost',
+  variant: 'secondary',
   tooltipSide: 'bottom',
   tooltip: 'Уведомления',
 })
