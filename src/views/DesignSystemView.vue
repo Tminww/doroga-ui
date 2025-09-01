@@ -407,6 +407,10 @@
       </BaseTable>
     </div>
   </section>
+  <section class="component-demo">
+    <h3 class="component-demo-title">Таблицы</h3>
+    <TableUsage />
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -414,7 +418,6 @@ import { ref, computed } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseIcon from '@/components/ui/BaseIcon.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
-import DesignSystemProvider from '@/components/DesignSystemProvider.vue'
 import { type IconName } from '@/components/ui/BaseIcon.vue'
 import SettingsButton from '@/components/ui/SettingsButton.vue'
 import NotifyButton from '@/components/ui/NotifyButton.vue'
@@ -433,6 +436,7 @@ import BaseTable from '@/components/ui/BaseTable.vue'
 import { h } from 'vue'
 import SidebarToggleButton from '@/components/ui/SidebarToggleButton.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
+import TableUsage from '@/components/widgets/TableUsage.vue'
 
 const tableColumns = [
   {

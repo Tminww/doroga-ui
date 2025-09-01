@@ -20,6 +20,9 @@
         left-icon="search"
         clearable
         class="base-table-search"
+        :loading="searchLoading"
+        @input="handleSearchInput"
+        @clear="handleSearchClear"
       />
       <slot name="filters" />
     </div>
@@ -38,43 +41,67 @@
               :key="header.id"
               class="base-table-cell base-table-cell--header"
               :class="getCellClasses(header.column)"
-              :style="{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined }"
+              :style="getColumnStyle(header)"
             >
               <div
                 v-if="!header.isPlaceholder"
                 class="base-table-header-content"
-                :class="{ 'base-table-header-content--sortable': header.column.getCanSort() }"
-                @click="header.column.getToggleSortingHandler()?.($event)"
+                :class="{
+                  'base-table-header-content--sortable': header.column.getCanSort() && sortable,
+                  'base-table-header-content--sorting':
+                    sortLoading && currentSortColumn === header.column.id,
+                }"
+                @click="handleSort(header.column)"
               >
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-                <BaseIcon
-                  v-if="header.column.getCanSort()"
-                  :icon="getSortIcon(header.column.getIsSorted())"
-                  :size="16"
-                  class="base-table-sort-icon"
-                />
+
+                <!-- Индикатор сортировки -->
+                <template v-if="sortable && header.column.getCanSort()">
+                  <BaseIcon
+                    v-if="sortLoading && currentSortColumn === header.column.id"
+                    icon="refresh-cw"
+                    :size="14"
+                    class="base-table-sort-loading"
+                  />
+                  <BaseIcon
+                    v-else
+                    :icon="getSortIcon(header.column.getIsSorted())"
+                    :size="14"
+                    class="base-table-sort-icon"
+                  />
+                </template>
               </div>
             </th>
           </tr>
         </thead>
 
         <tbody class="base-table-body">
-          <tr
-            v-for="row in table.getRowModel().rows"
-            :key="row.id"
-            class="base-table-row base-table-row--body"
-            :class="{ 'base-table-row--selected': row.getIsSelected() }"
-            @click="handleRowClick(row)"
-          >
-            <td
-              v-for="cell in row.getVisibleCells()"
-              :key="cell.id"
-              class="base-table-cell base-table-cell--body"
-              :class="getCellClasses(cell.column)"
+          <template v-if="!loading && table.getRowModel().rows.length">
+            <tr
+              v-for="row in table.getRowModel().rows"
+              :key="row.id"
+              class="base-table-row base-table-row--body"
+              :class="getRowClasses(row)"
+              @click="handleRowClick(row)"
             >
-              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-            </td>
-          </tr>
+              <td
+                v-for="cell in row.getVisibleCells()"
+                :key="cell.id"
+                class="base-table-cell base-table-cell--body"
+                :class="getCellClasses(cell.column)"
+              >
+                <!-- Слот для кастомизации содержимого ячейки -->
+                <slot
+                  :name="`cell-${cell.column.id}`"
+                  :cell="cell"
+                  :row="row"
+                  :value="cell.getValue()"
+                >
+                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                </slot>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
 
@@ -86,37 +113,114 @@
 
       <!-- Пустое состояние -->
       <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
-        <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
-        <span>{{ emptyText }}</span>
+        <slot name="empty" :search-value="searchValue">
+          <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
+          <div class="base-table-empty-content">
+            <span class="base-table-empty-title">
+              {{ searchValue ? 'Ничего не найдено' : emptyText }}
+            </span>
+            <span v-if="searchValue" class="base-table-empty-subtitle">
+              Попробуйте изменить поисковый запрос
+            </span>
+          </div>
+        </slot>
       </div>
     </div>
 
+    <!-- Информация о результатах -->
+    <div v-if="showResultsInfo && !loading" class="base-table-results-info">
+      <slot
+        name="results-info"
+        :total="totalItems"
+        :filtered="filteredItems"
+        :visible="table.getRowModel().rows.length"
+      >
+        <span class="base-table-results-text">
+          <template v-if="searchValue">
+            Найдено {{ filteredItems }} из {{ totalItems }} записей
+          </template>
+          <template v-else>
+            Показано {{ table.getRowModel().rows.length }} из {{ totalItems }} записей
+          </template>
+        </span>
+      </slot>
+    </div>
+
     <!-- Пагинация -->
-    <div v-if="showPagination && table.getPageCount() > 1" class="base-table-pagination">
+    <div v-if="showPagination && totalPages > 1 && !loading" class="base-table-pagination">
       <div class="base-table-pagination-info">
-        Показано {{ table.getRowModel().rows.length }} из
-        {{ table.getFilteredRowModel().rows.length }} записей
+        <span class="base-table-pagination-text">
+          Страница {{ currentPage }} из {{ totalPages }}
+        </span>
+
+        <!-- Выбор размера страницы -->
+        <div v-if="showPageSizeSelector" class="base-table-page-size">
+          <span class="base-table-page-size-label">Показать:</span>
+          <select
+            :value="pageSize"
+            @change="handlePageSizeChange"
+            class="base-table-page-size-select"
+            :disabled="loading"
+          >
+            <option v-for="size in pageSizeOptions" :key="size" :value="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
       </div>
 
       <div class="base-table-pagination-controls">
         <BaseButton
           variant="ghost"
           size="sm"
-          left-icon="chevron-left"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
+          left-icon="chevrons-left"
+          :disabled="currentPage === 1 || paginationLoading"
+          @click="goToPage(1)"
+          title="Первая страница"
         />
 
-        <span class="base-table-pagination-pages">
-          Страница {{ table.getState().pagination.pageIndex + 1 }} из {{ table.getPageCount() }}
-        </span>
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          left-icon="chevron-left"
+          :disabled="currentPage === 1 || paginationLoading"
+          @click="goToPage(currentPage - 1)"
+          title="Предыдущая страница"
+        />
+
+        <!-- Номера страниц -->
+        <div class="base-table-pagination-pages">
+          <template v-for="page in visiblePages" :key="page">
+            <BaseButton
+              v-if="page !== '...'"
+              variant="ghost"
+              size="sm"
+              :class="{ 'base-table-page-active': page === currentPage }"
+              :disabled="paginationLoading"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </BaseButton>
+            <span v-else class="base-table-pagination-ellipsis">...</span>
+          </template>
+        </div>
 
         <BaseButton
           variant="ghost"
           size="sm"
           right-icon="chevron-right"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
+          :disabled="currentPage === totalPages || paginationLoading"
+          @click="goToPage(currentPage + 1)"
+          title="Следующая страница"
+        />
+
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          right-icon="chevrons-right"
+          :disabled="currentPage === totalPages || paginationLoading"
+          @click="goToPage(totalPages)"
+          title="Последняя страница"
         />
       </div>
     </div>
@@ -124,16 +228,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import {
   type ColumnDef,
   type SortDirection,
   type Row,
+  type Column,
   FlexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
 import BaseIcon, { type IconName } from './BaseIcon.vue'
@@ -147,52 +249,129 @@ export interface BaseTableProps<TData = any> {
   columns: ColumnDef<TData, any>[]
   /** Заголовок таблицы */
   title?: string
+
+  // Поиск
   /** Включить поиск */
   searchable?: boolean
   /** Placeholder для поиска */
   searchPlaceholder?: string
+  /** Значение поиска (для внешнего управления) */
+  searchValue?: string
+  /** Задержка поиска в мс */
+  searchDebounce?: number
+
+  // Пагинация
   /** Показать пагинацию */
   showPagination?: boolean
+  /** Текущая страница */
+  currentPage?: number
   /** Размер страницы */
   pageSize?: number
-  /** Состояние загрузки */
+  /** Общее количество элементов */
+  totalItems?: number
+  /** Количество отфильтрованных элементов */
+  filteredItems?: number
+  /** Показать селектор размера страницы */
+  showPageSizeSelector?: boolean
+  /** Опции размера страницы */
+  pageSizeOptions?: number[]
+
+  // Сортировка
+  /** Включить сортировку */
+  sortable?: boolean
+  /** Текущая сортировка */
+  sortBy?: string
+  /** Направление сортировки */
+  sortDirection?: SortDirection
+
+  // Состояния загрузки
+  /** Общее состояние загрузки */
   loading?: boolean
+  /** Загрузка поиска */
+  searchLoading?: boolean
+  /** Загрузка сортировки */
+  sortLoading?: boolean
+  /** Загрузка пагинации */
+  paginationLoading?: boolean
+
+  // Тексты
   /** Текст при загрузке */
   loadingText?: string
   /** Текст для пустого состояния */
   emptyText?: string
-  /** Включить выбор строк */
-  selectable?: boolean
-  /** Включить сортировку */
-  sortable?: boolean
+
+  // Внешний вид
   /** Размер таблицы */
   size?: 'sm' | 'md' | 'lg'
   /** Растянуть на всю ширину */
   fullWidth?: boolean
+  /** Выделяемые строки */
+  hoverable?: boolean
+  /** Показать информацию о результатах */
+  showResultsInfo?: boolean
   /** Дополнительные классы */
   class?: string
-  /** Обработчик клика по строке */
-  onRowClick?: (row: Row<TData>) => void
+
+  // Поведение
+  /** Включить выбор строк */
+  selectable?: boolean
+  /** Множественный выбор */
+  multiSelect?: boolean
+  /** Выбранные строки */
+  selectedRows?: TData[]
 }
 
 const props = withDefaults(defineProps<BaseTableProps<TData>>(), {
   searchPlaceholder: 'Поиск...',
+  searchDebounce: 300,
   showPagination: true,
+  currentPage: 1,
   pageSize: 10,
+  totalItems: 0,
+  showPageSizeSelector: true,
+  pageSizeOptions: () => [10, 25, 50, 100],
+  sortable: true,
+  loading: false,
+  searchLoading: false,
+  sortLoading: false,
+  paginationLoading: false,
   loadingText: 'Загрузка...',
   emptyText: 'Нет данных для отображения',
-  selectable: false,
-  sortable: true,
   size: 'md',
   fullWidth: true,
+  hoverable: true,
+  showResultsInfo: true,
+  selectable: false,
+  multiSelect: false,
+  selectedRows: () => [],
 })
 
 const emit = defineEmits<{
-  'row-click': [row: Row<TData>]
+  // События поиска
+  search: [query: string]
+  'search-clear': []
+
+  // События пагинации
+  'page-change': [page: number]
+  'page-size-change': [size: number]
+
+  // События сортировки
+  'sort-change': [column: string, direction: SortDirection | false]
+
+  // События строк
+  'row-click': [row: Row<TData>, event: MouseEvent]
+  'row-select': [row: TData, selected: boolean]
   'selection-change': [selectedRows: TData[]]
 }>()
 
-const searchValue = ref('')
+// Поиск
+const searchValue = ref(props.searchValue || '')
+const searchTimeoutId = ref<NodeJS.Timeout | null>(null)
+const currentSortColumn = ref<string | null>(null)
+
+// Вычисляемые свойства
+const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize))
+const actualFilteredItems = computed(() => props.filteredItems ?? props.totalItems)
 
 // Настройка TanStack Table
 const table = useVueTable({
@@ -203,27 +382,12 @@ const table = useVueTable({
     return props.columns
   },
   getCoreRowModel: getCoreRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
-  getSortedRowModel: getSortedRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
-  globalFilterFn: 'includesString',
-  state: {
-    get globalFilter() {
-      return searchValue.value
-    },
-    get pagination() {
-      return {
-        pageIndex: 0,
-        pageSize: props.pageSize,
-      }
-    },
-  },
-  onGlobalFilterChange: (value) => {
-    searchValue.value = value
-  },
+  manualPagination: true,
+  manualSorting: true,
+  manualFiltering: true,
 })
 
-// Классы для контейнера таблицы
+// Классы
 const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
   {
@@ -233,14 +397,70 @@ const tableContainerClasses = computed(() => [
   props.class,
 ])
 
-// Классы для таблицы
 const tableClasses = computed(() => [`base-table--${props.size}`])
+
+// Получение видимых страниц для пагинации
+const visiblePages = computed(() => {
+  const pages: (number | string)[] = []
+  const current = props.currentPage
+  const total = totalPages.value
+
+  if (total <= 7) {
+    // Показываем все страницы
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Сложная логика для большого количества страниц
+    pages.push(1)
+
+    if (current > 4) {
+      pages.push('...')
+    }
+
+    const start = Math.max(2, current - 1)
+    const end = Math.min(total - 1, current + 1)
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+
+    if (current < total - 3) {
+      pages.push('...')
+    }
+
+    if (total > 1) {
+      pages.push(total)
+    }
+  }
+
+  return pages
+})
+
+// Получение стилей колонки
+const getColumnStyle = (header: any) => {
+  const styles: Record<string, string> = {}
+
+  if (header.getSize() !== 150) {
+    styles.width = `${header.getSize()}px`
+  }
+
+  if (header.column.columnDef.minWidth) {
+    styles.minWidth = `${header.column.columnDef.minWidth}px`
+  }
+
+  if (header.column.columnDef.maxWidth) {
+    styles.maxWidth = `${header.column.columnDef.maxWidth}px`
+  }
+
+  return styles
+}
 
 // Получение иконки сортировки
 const getSortIcon = (sortDirection: false | SortDirection): IconName => {
   if (sortDirection === 'asc') return 'trending-up'
   if (sortDirection === 'desc') return 'trending-down'
-  return 'minus'
+  return 'arrow-up-down'
 }
 
 // Получение классов для ячейки
@@ -258,16 +478,84 @@ const getCellClasses = (column: any) => {
   return classes
 }
 
-// Обработчик клика по строке
-const handleRowClick = (row: Row<TData>) => {
-  emit('row-click', row)
-  props.onRowClick?.(row)
+// Получение классов для строки
+const getRowClasses = (row: Row<TData>) => {
+  const classes = []
+
+  if (row.getIsSelected()) {
+    classes.push('base-table-row--selected')
+  }
+
+  if (props.hoverable) {
+    classes.push('base-table-row--hoverable')
+  }
+
+  return classes
 }
 
-// Сброс пагинации при изменении поиска
-watch(searchValue, () => {
-  table.setPageIndex(0)
-})
+// Обработчики событий
+const handleSearchInput = () => {
+  if (searchTimeoutId.value) {
+    clearTimeout(searchTimeoutId.value)
+  }
+
+  searchTimeoutId.value = setTimeout(() => {
+    emit('search', searchValue.value)
+  }, props.searchDebounce)
+}
+
+const handleSearchClear = () => {
+  searchValue.value = ''
+  if (searchTimeoutId.value) {
+    clearTimeout(searchTimeoutId.value)
+  }
+  emit('search-clear')
+}
+
+const handleSort = (column: Column<TData>) => {
+  if (!props.sortable || !column.getCanSort()) return
+
+  currentSortColumn.value = column.id
+  const currentSort = column.getIsSorted()
+
+  let newDirection: SortDirection | false
+  if (currentSort === false) {
+    newDirection = 'asc'
+  } else if (currentSort === 'asc') {
+    newDirection = 'desc'
+  } else {
+    newDirection = false
+  }
+
+  emit('sort-change', column.id, newDirection)
+}
+
+const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
+  const mouseEvent = event || new MouseEvent('click')
+  emit('row-click', row, mouseEvent)
+}
+
+const goToPage = (page: number) => {
+  if (page !== props.currentPage && page >= 1 && page <= totalPages.value) {
+    emit('page-change', page)
+  }
+}
+
+const handlePageSizeChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const newSize = parseInt(target.value)
+  emit('page-size-change', newSize)
+}
+
+// Следим за внешними изменениями поиска
+watch(
+  () => props.searchValue,
+  (newValue) => {
+    if (newValue !== searchValue.value) {
+      searchValue.value = newValue || ''
+    }
+  },
+)
 </script>
 
 <style scoped>
@@ -350,7 +638,7 @@ watch(searchValue, () => {
   background-color: var(--ds-surface-secondary);
 }
 
-.base-table-row--body:hover {
+.base-table-row--body.base-table-row--hoverable:hover {
   background-color: var(--ds-button-ghost-bg-hover);
 }
 
@@ -416,6 +704,7 @@ watch(searchValue, () => {
   align-items: center;
   gap: var(--ds-spacing-xs);
   cursor: default;
+  min-height: 20px;
 }
 
 .base-table-header-content--sortable {
@@ -430,10 +719,16 @@ watch(searchValue, () => {
 .base-table-sort-icon {
   opacity: 0.5;
   transition: opacity 0.2s ease;
+  flex-shrink: 0;
 }
 
 .base-table-header-content--sortable:hover .base-table-sort-icon {
   opacity: 1;
+}
+
+.base-table-sort-loading {
+  animation: spin 1s linear infinite;
+  color: var(--ds-text-primary);
 }
 
 /* Состояния */
@@ -467,6 +762,36 @@ watch(searchValue, () => {
   opacity: 0.5;
 }
 
+.base-table-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
+  text-align: center;
+}
+
+.base-table-empty-title {
+  font-weight: 500;
+  color: var(--ds-text-primary);
+}
+
+.base-table-empty-subtitle {
+  font-size: var(--ds-font-size-xs);
+}
+
+/* Информация о результатах */
+.base-table-results-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--ds-spacing-sm);
+}
+
+.base-table-results-text {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-text-secondary);
+}
+
 /* Пагинация */
 .base-table-pagination {
   display: flex;
@@ -474,23 +799,69 @@ watch(searchValue, () => {
   justify-content: space-between;
   gap: var(--ds-spacing-md);
   flex-wrap: wrap;
+  padding: var(--ds-spacing-sm) 0;
 }
 
 .base-table-pagination-info {
-  font-size: var(--ds-font-size-xs);
-  color: var(--ds-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-lg);
 }
 
-.base-table-pagination-controls {
+.base-table-pagination-text {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-text-secondary);
+  white-space: nowrap;
+}
+
+.base-table-page-size {
   display: flex;
   align-items: center;
   gap: var(--ds-spacing-sm);
 }
 
-.base-table-pagination-pages {
-  font-size: var(--ds-font-size-sm);
+.base-table-page-size-label {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-text-secondary);
+  white-space: nowrap;
+}
+
+.base-table-page-size-select {
+  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  background-color: var(--ds-surface);
   color: var(--ds-text-primary);
-  padding: 0 var(--ds-spacing-sm);
+  font-size: var(--ds-font-size-xs);
+  cursor: pointer;
+}
+
+.base-table-page-size-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.base-table-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
+}
+
+.base-table-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
+}
+
+.base-table-pagination-ellipsis {
+  padding: 0 var(--ds-spacing-xs);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-font-size-sm);
+}
+
+.base-table-page-active {
+  background-color: var(--ds-button-primary-bg) !important;
+  color: var(--ds-button-primary-text) !important;
 }
 
 /* Анимации */
@@ -522,6 +893,33 @@ watch(searchValue, () => {
   .base-table-pagination {
     flex-direction: column;
     gap: var(--ds-spacing-sm);
+  }
+
+  .base-table-pagination-info {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-spacing-sm);
+  }
+
+  .base-table-pagination-controls {
+    justify-content: center;
+  }
+
+  .base-table-pagination-pages {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .base-table-pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .base-table-pagination-pages {
+    order: -1;
+    margin-bottom: var(--ds-spacing-sm);
   }
 }
 </style>
