@@ -5,13 +5,7 @@
       <span v-if="required" class="base-input-required">*</span>
     </label>
 
-    <BaseTooltip
-      :content="tooltipContent"
-      component-name="BaseInput"
-      :component-props="tooltipProps"
-      :code="tooltipCode"
-      side="right"
-    >
+    <BaseTooltip :content="tooltipContent" :side="tooltipSide">
       <div class="base-input-container">
         <BaseIcon
           v-if="leftIcon"
@@ -97,8 +91,10 @@ export interface BaseInputProps {
   clearable?: boolean
   /** Автокомплит */
   autocomplete?: string
-  /** Описание для tooltip в продакшене */
+  /** Описание для tooltip */
   tooltip?: string
+  /** Позиция tooltip */
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
 }
 
 const props = withDefaults(defineProps<BaseInputProps>(), {
@@ -108,6 +104,7 @@ const props = withDefaults(defineProps<BaseInputProps>(), {
   readonly: false,
   required: false,
   clearable: false,
+  tooltipSide: 'top',
 })
 
 const emit = defineEmits<{
@@ -147,39 +144,6 @@ const handleClear = () => {
 const tooltipContent = computed(() => {
   return props.tooltip || `${props.label || 'Поле ввода'} (${props.type})`
 })
-
-// Props для отображения в дизайн-системе
-const tooltipProps = computed(() => {
-  const propsList = []
-
-  if (props.modelValue !== undefined) propsList.push(`v-model="${props.modelValue}"`)
-  if (props.type !== 'text') propsList.push(`type="${props.type}"`)
-  if (props.label) propsList.push(`label="${props.label}"`)
-  if (props.placeholder) propsList.push(`placeholder="${props.placeholder}"`)
-  if (props.hint) propsList.push(`hint="${props.hint}"`)
-  if (props.error) propsList.push(`error="${props.error}"`)
-  if (props.leftIcon) propsList.push(`left-icon="${props.leftIcon}"`)
-  if (props.rightIcon) propsList.push(`right-icon="${props.rightIcon}"`)
-  if (props.size !== 'md') propsList.push(`size="${props.size}"`)
-  if (props.disabled) propsList.push(':disabled="true"')
-  if (props.readonly) propsList.push(':readonly="true"')
-  if (props.required) propsList.push(':required="true"')
-  if (props.clearable) propsList.push(':clearable="true"')
-  if (props.autocomplete) propsList.push(`autocomplete="${props.autocomplete}"`)
-
-  return propsList.join('\n  ')
-})
-
-// Полный код компонента для tooltip
-const tooltipCode = computed(() => {
-  const hasProps = tooltipProps.value.length > 0
-
-  if (!hasProps) {
-    return `<BaseInput v-model="value" />`
-  }
-
-  return `<BaseInput\n  ${tooltipProps.value}\n/>`
-})
 </script>
 
 <style scoped>
@@ -192,41 +156,11 @@ const tooltipCode = computed(() => {
 .base-input-label {
   font-size: var(--ds-font-size-sm);
   font-weight: 500;
-  color: var(--ds-text-tertiary);
+  color: var(--ds-text-primary);
   cursor: pointer;
-  padding: var(--ds-spacing-xs);
-  border-radius: var(--ds-radius-sm);
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.base-input-clear:hover {
-  color: var(--ds-text-secondary);
-  background-color: var(--ds-surface-secondary);
-}
-
-.base-input--sm .base-input-clear {
-  right: var(--ds-spacing-sm);
-}
-
-.base-input--lg .base-input-clear {
-  right: var(--ds-spacing-lg);
-}
-
-/* Подсказки и ошибки */
-.base-input-help {
-  font-size: var(--ds-font-size-xs);
-  line-height: 1.4;
-}
-
-.base-input-error {
-  color: var(--ds-danger-500);
-}
-
-.base-input-hint {
-  color: var(--ds-text-secondary);
+  gap: var(--ds-spacing-xs);
 }
 
 .base-input-required {
@@ -275,21 +209,21 @@ const tooltipCode = computed(() => {
 
 /* Размеры */
 .base-input--sm {
-  padding: var(--ds-spacing-xs) var(--ds-spacing-md);
+  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
   font-size: var(--ds-font-size-xs);
   min-height: 1rem;
 }
 
 .base-input--md {
-  padding: var(--ds-spacing-sm) var(--ds-spacing-lg);
+  padding: var(--ds-spacing-xs) var(--ds-spacing-md);
   font-size: var(--ds-font-size-sm);
-  min-height: 1.25rem;
+  min-height: 1.5rem;
 }
 
 .base-input--lg {
-  padding: var(--ds-spacing-md) var(--ds-spacing-xl);
+  padding: var(--ds-spacing-xs) var(--ds-spacing-md);
   font-size: var(--ds-font-size-md);
-  min-height: 1.5rem;
+  min-height: 2rem;
 }
 
 /* Состояния */
@@ -320,11 +254,11 @@ const tooltipCode = computed(() => {
 }
 
 .base-input--lg.base-input--with-left-icon {
-  padding-left: 3rem;
+  padding-left: 2.5rem;
 }
 
 .base-input--lg.base-input--with-right-icon {
-  padding-right: 3rem;
+  padding-right: 2.5rem;
 }
 
 /* Иконки */
@@ -337,33 +271,33 @@ const tooltipCode = computed(() => {
 }
 
 .base-input-icon--left {
-  left: var(--ds-spacing-md);
-}
-
-.base-input-icon--right {
-  right: var(--ds-spacing-md);
-}
-
-.base-input--sm .base-input-icon--left {
   left: var(--ds-spacing-sm);
 }
 
-.base-input--sm .base-input-icon--right {
+.base-input-icon--right {
   right: var(--ds-spacing-sm);
 }
 
+.base-input--sm .base-input-icon--left {
+  left: var(--ds-spacing-xs);
+}
+
+.base-input--sm .base-input-icon--right {
+  right: var(--ds-spacing-xs);
+}
+
 .base-input--lg .base-input-icon--left {
-  left: var(--ds-spacing-lg);
+  left: var(--ds-spacing-md);
 }
 
 .base-input--lg .base-input-icon--right {
-  right: var(--ds-spacing-lg);
+  right: var(--ds-spacing-md);
 }
 
 /* Кнопка очистки */
 .base-input-clear {
   position: absolute;
-  right: var(--ds-spacing-md);
+  right: var(--ds-spacing-sm);
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -376,5 +310,32 @@ const tooltipCode = computed(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+}
+
+.base-input-clear:hover {
+  color: var(--ds-text-secondary);
+  background-color: var(--ds-surface-secondary);
+}
+
+.base-input--sm .base-input-clear {
+  right: var(--ds-spacing-xs);
+}
+
+.base-input--lg .base-input-clear {
+  right: var(--ds-spacing-md);
+}
+
+/* Подсказки и ошибки */
+.base-input-help {
+  font-size: var(--ds-font-size-xs);
+  line-height: 1.4;
+}
+
+.base-input-error {
+  color: var(--ds-danger-500);
+}
+
+.base-input-hint {
+  color: var(--ds-text-secondary);
 }
 </style>

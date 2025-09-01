@@ -84,7 +84,7 @@
           <BaseButton
             variant="ghost"
             size="sm"
-            left-icon="trash"
+            left-icon="trash-2"
             title="Удалить"
             :class="{ 'text-red-600': true }"
             @click.stop="deleteUser(row.original)"

@@ -123,6 +123,7 @@ const ICON_MAP = {
   moon: Moon,
   monitor: Monitor,
   eye: Eye,
+  trash: Trash,
   'trash-2': Trash2,
   'search-x': SearchX,
   'sort-asc': SortAsc,

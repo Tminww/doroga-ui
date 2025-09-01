@@ -7,7 +7,7 @@ const props = withDefaults(
     name?: string // Имя
     lastName?: string // Фамилия
     middleName?: string // Отчество
-    role?: string //Роль
+    role?: string // Роль
   }>(),
   {
     name: 'Серафим',
@@ -16,24 +16,33 @@ const props = withDefaults(
     role: 'Администратор',
   },
 )
+
 const shortName = computed(() => {
   return `${props.name.charAt(0).toUpperCase()}${props.lastName.charAt(0).toUpperCase()}`
 })
 </script>
 
 <template>
-  <div class="container">
-    <div class="name">{{ name }} {{ lastName }}</div>
-    <div class="role">{{ role }}</div>
+  <div class="about-user">
+    <div class="container">
+      <div class="name">{{ name }} {{ lastName }}</div>
+      <div class="role">{{ role }}</div>
+    </div>
+    <BaseAvatar class="avatar" :shortName="shortName" />
   </div>
-  <BaseAvatar class="avatar" :shortName="shortName" />
 </template>
 
 <style scoped>
+.about-user {
+  display: flex;
+  align-items: center;
+}
+
 .container {
   border-left: 1px solid var(--ds-border);
   padding-left: 10px;
 }
+
 .name {
   font-size: var(--ds-font-size-sm);
   font-weight: 600;
@@ -43,6 +52,7 @@ const shortName = computed(() => {
   font-size: var(--ds-font-size-xs);
   color: var(--ds-text-secondary);
 }
+
 .avatar {
   margin-left: 10px;
   margin-right: 10px;
