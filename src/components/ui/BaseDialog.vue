@@ -11,11 +11,12 @@ import {
 } from 'reka-ui'
 import { type BaseButtonProps } from './BaseButton.vue'
 import BaseButton from './BaseButton.vue'
-import BaseIcon from './BaseIcon.vue'
+import { ref, watch } from 'vue'
 
 interface BaseDialogProps {
   title?: string
   subTitle?: string
+  closeOnlyButton?: boolean
   useCloseButton?: boolean
   useCancelButton?: boolean
   useOkButton?: boolean
@@ -27,6 +28,7 @@ interface BaseDialogProps {
 withDefaults(defineProps<BaseDialogProps>(), {
   title: 'Диалоговое окно',
   subTitle: 'Описание',
+  closeOnlyButton: false,
   useCloseButton: false,
   useCancelButton: true,
   useOkButton: true,
@@ -70,14 +72,23 @@ const emit = defineEmits<{
   'click:ok': [event: MouseEvent]
   'click:close': [event: MouseEvent]
 }>()
+
+const open = ref(false)
+
+// watch(open, () => {
+//   console.log(open.value)
+// })
 </script>
 <template>
   <div>
-    <DialogRoot>
+    <DialogRoot v-model:open="open">
       <DialogTrigger as-child> <slot name="default"></slot></DialogTrigger>
       <DialogPortal to="body">
         <DialogOverlay class="dialog-overlay" />
-        <DialogContent class="dialog-content">
+        <DialogContent
+          class="dialog-content"
+          @pointer-down-outside="closeOnlyButton ? $event.preventDefault() : null"
+        >
           <div class="dialog-content-header">
             <div>
               <DialogTitle class="dialog-title"> {{ title }} </DialogTitle>

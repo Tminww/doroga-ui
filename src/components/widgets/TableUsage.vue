@@ -24,7 +24,7 @@
     >
       <!-- Слот для действий в заголовке -->
       <template #actions>
-        <ConfirmDialog>
+        <ConfirmDialog @click:ok="console.log('OK')">
           <BaseButton variant="primary" left-icon="plus" @click="showCreateDialog = true">
             Добавить пользователя
           </BaseButton></ConfirmDialog
