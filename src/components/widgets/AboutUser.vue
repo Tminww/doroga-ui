@@ -18,7 +18,7 @@ const props = withDefaults(
 )
 
 const shortName = computed(() => {
-  return `${props.name.charAt(0).toUpperCase()}${props.lastName.charAt(0).toUpperCase()}`
+  return `${props.name[0].toUpperCase()}${props.lastName[0].toUpperCase()}`
 })
 </script>
 
@@ -39,6 +39,9 @@ const shortName = computed(() => {
 }
 
 .container {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
   border-left: 1px solid var(--ds-border);
   padding-left: 10px;
 }

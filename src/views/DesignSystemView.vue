@@ -285,7 +285,7 @@
           <ExportButton @click="console.log('EXPORT CLICK')" />
           <FilterButton @click="console.log('FILTER CLICK')" />
           <UpdateButton @click="console.log('Update CLICK')" />
-          <ActionButton @click="console.log('ACTION CLICK')" />
+          <TableActionButton @click="console.log('ACTION CLICK')" />
           <PrevButton @click="console.log('PREV CLICK')" />
           <NextButton @click="console.log('NEXT CLICK')" />
           <SidebarToggleButton />
@@ -293,6 +293,11 @@
           <SidebarButton :is-collapsed="true" />
 
           <BaseSelect />
+          <BaseBadge title="Какой-то статус" variant="warning" />
+          <BaseBadge title="Какой-то статус" variant="danger" />
+          <BaseBadge title="Какой-то статус" variant="primary" />
+          <BaseBadge title="Какой-то статус" variant="success" />
+          <BaseBadge title="Какой-то статус" variant="secondary" />
         </div>
         <div class="example-content"></div>
       </div>
@@ -425,12 +430,13 @@ import AddButton from '@/components/ui/AddButton.vue'
 import ExportButton from '@/components/ui/ExportButton.vue'
 import FilterButton from '@/components/ui/FilterButton.vue'
 import UpdateButton from '@/components/ui/UpdateButton.vue'
-import ActionButton from '@/components/ui/ActionButton.vue'
+import TableActionButton from '@/components/ui/TableActionButton.vue'
 import PrevButton from '@/components/ui/PrevButton.vue'
 import NextButton from '@/components/ui/NextButton.vue'
 import SidebarButton from '@/components/ui/SidebarButton.vue'
 import BaseLayout from '@/layouts/BaseLayout.vue'
 import BaseTable from '@/components/ui/BaseTable.vue'
+import BaseBadge from '@/components/ui/BaseBadge.vue'
 // Данные для демонстрации
 
 import { h } from 'vue'

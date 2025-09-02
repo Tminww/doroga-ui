@@ -8,7 +8,7 @@ const router = createRouter({
       path: '/directions',
       name: 'directions',
 
-      component: () => import('@/views/MainView.vue'),
+      component: () => import('@/views/DirectionsView.vue'),
     },
   ],
 })

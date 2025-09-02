@@ -17,6 +17,7 @@ import AboutUser from '@/components/widgets/AboutUser.vue'
 interface SidebarItem {
   id: string
   text: string
+  description?: string
   icon: IconName
   routeName?: string
 }
@@ -38,6 +39,7 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'dashboard',
         text: 'Панель управления',
+        description: 'Обзор текущей деятельности ',
         icon: 'layout-dashboard',
         routeName: 'dashboard',
       },
@@ -49,30 +51,35 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'directions',
         text: 'Направления',
+        description: 'Управление данными направления',
         icon: 'waypoints',
         routeName: 'directions',
       },
       {
         id: 'samples',
         text: 'Образцы',
+        description: 'Управление данными образцов',
         icon: 'test-tube-diagonal',
         routeName: 'samples',
       },
       {
         id: 'protocols',
         text: 'Протоколы',
+        description: 'Управление данными протоколов',
         icon: 'clipboard-list',
         routeName: 'protocols',
       },
       {
         id: 'results',
         text: 'Результаты',
+        description: 'Управление данными результатов',
         icon: 'layout-list',
         routeName: 'results',
       },
       {
         id: 'conclusions',
         text: 'Заключения',
+        description: 'Управление данными заключений',
         icon: 'file-check',
         routeName: 'conclusions',
       },
@@ -84,18 +91,21 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'doctors',
         text: 'Врачи',
+        description: 'Управление данными врачей',
         icon: 'user-check',
         routeName: 'doctors',
       },
       {
         id: 'divisions',
         text: 'Подразделения',
+        description: 'Управление данными подразделений',
         icon: 'hospital',
         routeName: 'divisions',
       },
       {
         id: 'users',
         text: 'Пользователи',
+        description: 'Управление данными пользователей системы',
         icon: 'users',
         routeName: 'users',
       },
@@ -107,30 +117,35 @@ const sidebarCategories: SidebarCategory[] = [
       {
         id: 'research-goals',
         text: 'Цели исследования',
+        description: 'Управление данными целей исследования',
         icon: 'goal',
         routeName: 'research-goals',
       },
       {
         id: 'sample-types',
         text: 'Типы образцов',
+        description: 'Управление данными типов образцов',
         icon: 'test-tubes',
         routeName: 'sample-types',
       },
       {
         id: 'indicators',
         text: 'Показатели',
+        description: 'Управление данными показателей',
         icon: 'bar-chart',
         routeName: 'indicators',
       },
       {
         id: 'protocol-types',
         text: 'Типы протоколов',
+        description: 'Управление данными типов протоколов',
         icon: 'files',
         routeName: 'protocol-types',
       },
       {
         id: 'objects',
         text: 'Объекты',
+        description: 'Управление данными объектов',
         icon: 'building',
         routeName: 'objects',
       },
@@ -138,14 +153,14 @@ const sidebarCategories: SidebarCategory[] = [
   },
 ]
 
-const currentPageTitle = computed(() => {
+const currentPageInfo = computed(() => {
   for (const category of sidebarCategories) {
     const item = category.items.find((item) => item.id === activeItem.value)
     if (item) {
-      return item.text
+      return { title: item.text, description: item.description }
     }
   }
-  return 'Неизвестная страница'
+  return { title: 'Неизвестная страница', description: '' }
 })
 
 const toggleSidebar = () => {
@@ -216,73 +231,12 @@ const selectItem = (item: SidebarItem) => {
       <!-- Main Content с скроллом -->
       <main class="main-content">
         <div class="container">
-          <h1>{{ currentPageTitle }}</h1>
+          <h1>{{ currentPageInfo.title }}</h1>
+          <p>{{ currentPageInfo.description }}</p>
           <p>Активная страница: {{ activeItem }}</p>
-          <p>Состояние сайдбара: {{ isCollapsed ? 'свернут' : 'развернут' }}</p>
 
           <!-- Содержимое страниц можно отображать через слот -->
-          <slot name="main">
-            <div class="default-content">
-              <h2>Добро пожаловать</h2>
-              <p>Выберите раздел в боковой панели для навигации.</p>
-            </div>
-            <div class="default-content">
-              <h2>Welcome</h2>
-              <p>
-                The connection() context behaves like the Connection object context: at the end of
-                the block, if there is a transaction open, it will be committed if the context is
-                exited normally, or rolled back if the context is exited with an exception. See
-                Transaction contexts for details. The pool manages a certain amount of connections
-                (between min_size and max_size). If the pool has a connection ready in its state, it
-                is served immediately to the connection() caller, otherwise the caller is put in a
-                queue and is served a connection as soon as it's available. If instead of threads
-                your application uses async code you can use the AsyncConnectionPool instead and use
-                the async and await keywords with the methods requiring them:
-              </p>
-            </div>
-            <div class="default-content">
-              <h2>Welcome</h2>
-              <p>
-                The connection() context behaves like the Connection object context: at the end of
-                the block, if there is a transaction open, it will be committed if the context is
-                exited normally, or rolled back if the context is exited with an exception. See
-                Transaction contexts for details. The pool manages a certain amount of connections
-                (between min_size and max_size). If the pool has a connection ready in its state, it
-                is served immediately to the connection() caller, otherwise the caller is put in a
-                queue and is served a connection as soon as it's available. If instead of threads
-                your application uses async code you can use the AsyncConnectionPool instead and use
-                the async and await keywords with the methods requiring them:
-              </p>
-            </div>
-            <div class="default-content">
-              <h2>Welcome</h2>
-              <p>
-                The connection() context behaves like the Connection object context: at the end of
-                the block, if there is a transaction open, it will be committed if the context is
-                exited normally, or rolled back if the context is exited with an exception. See
-                Transaction contexts for details. The pool manages a certain amount of connections
-                (between min_size and max_size). If the pool has a connection ready in its state, it
-                is served immediately to the connection() caller, otherwise the caller is put in a
-                queue and is served a connection as soon as it's available. If instead of threads
-                your application uses async code you can use the AsyncConnectionPool instead and use
-                the async and await keywords with the methods requiring them:
-              </p>
-            </div>
-            <div class="default-content">
-              <h2>Welcome</h2>
-              <p>
-                The connection() context behaves like the Connection object context: at the end of
-                the block, if there is a transaction open, it will be committed if the context is
-                exited normally, or rolled back if the context is exited with an exception. See
-                Transaction contexts for details. The pool manages a certain amount of connections
-                (between min_size and max_size). If the pool has a connection ready in its state, it
-                is served immediately to the connection() caller, otherwise the caller is put in a
-                queue and is served a connection as soon as it's available. If instead of threads
-                your application uses async code you can use the AsyncConnectionPool instead and use
-                the async and await keywords with the methods requiring them:
-              </p>
-            </div>
-          </slot>
+          <slot name="main"> </slot>
         </div>
       </main>
     </div>
@@ -460,19 +414,19 @@ const selectItem = (item: SidebarItem) => {
 
 .container {
   max-width: 100%;
-  padding: min(30px, 7%);
+  padding: var(--ds-spacing-xl);
 }
 
-.container h1 {
-  margin-bottom: var(--ds-spacing-lg);
+.container > h1 {
+  margin-bottom: var(--ds-spacing-md);
   color: var(--ds-text-primary);
-  font-size: var(--ds-font-size-xl);
+  font-size: var(--ds-font-size-2xl);
 }
 
-.container p {
+.container > p {
   margin-bottom: var(--ds-spacing-md);
   color: var(--ds-text-secondary);
-  line-height: 1.6;
+  font-size: var(--ds-font-size-md);
 }
 
 .default-content {

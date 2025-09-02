@@ -6,7 +6,7 @@ const props = withDefaults(defineProps<BaseButtonProps>(), {
   variant: 'secondary',
   tooltipSide: 'left',
   title: 'Подробнее',
-  size: 'md',
+  size: 'sm',
 })
 </script>
 <template>

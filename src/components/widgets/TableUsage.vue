@@ -1,194 +1,154 @@
 <template>
-  <div class="table-example">
-    <EnhancedBaseTable
-      title="Управление пользователями"
-      :data="tableData"
-      :columns="columns"
-      :searchable="true"
-      :loading="loading"
-      :search-loading="searchLoading"
-      :sort-loading="sortLoading"
-      :pagination-loading="paginationLoading"
-      :current-page="currentPage"
-      :page-size="pageSize"
-      :total-items="totalItems"
-      :filtered-items="filteredItems"
-      :sort-by="sortBy"
-      :sort-direction="sortDirection"
-      @search="handleSearch"
-      @search-clear="handleSearchClear"
-      @sort-change="handleSortChange"
-      @page-change="handlePageChange"
-      @page-size-change="handlePageSizeChange"
-      @row-click="handleRowClick"
-    >
-      <!-- Слот для действий в заголовке -->
-      <template #actions>
-        <ConfirmDialog @click:ok="console.log('OK')">
-          <BaseButton variant="primary" left-icon="plus" @click="showCreateDialog = true">
-            Добавить пользователя
-          </BaseButton></ConfirmDialog
-        >
+  <BaseTable
+    title="Управление пользователями"
+    :data="tableData"
+    :columns="columns"
+    :searchable="true"
+    :loading="loading"
+    :search-loading="searchLoading"
+    :sort-loading="sortLoading"
+    :pagination-loading="paginationLoading"
+    :current-page="currentPage"
+    :page-size="pageSize"
+    :total-items="totalItems"
+    :filtered-items="filteredItems"
+    :sort-by="sortBy"
+    :sort-direction="sortDirection"
+    @search="handleSearch"
+    @search-clear="handleSearchClear"
+    @sort-change="handleSortChange"
+    @page-change="handlePageChange"
+    @page-size-change="handlePageSizeChange"
+    @row-click="handleRowClick"
+  >
+    <!-- Слот для действий в заголовке -->
+    <template #actions>
+      <ConfirmDialog @click:ok="console.log('OK')">
+        <BaseButton variant="primary" left-icon="plus" @click="showCreateDialog = true">
+          Добавить пользователя
+        </BaseButton></ConfirmDialog
+      >
 
-        <BaseButton variant="ghost" left-icon="download" @click="exportData"> Экспорт </BaseButton>
-      </template>
+      <BaseButton variant="ghost" left-icon="download" @click="exportData"> Экспорт </BaseButton>
+    </template>
 
-      <!-- Слот для фильтров -->
-      <template #filters>
-        <select v-model="statusFilter" @change="applyFilters" class="filter-select">
-          <option value="">Все статусы</option>
-          <option value="active">Активные</option>
-          <option value="inactive">Неактивные</option>
-          <option value="pending">Ожидают подтверждения</option>
-        </select>
+    <!-- Слот для фильтров -->
+    <template #filters>
+      <select v-model="statusFilter" @change="applyFilters" class="filter-select">
+        <option value="">Все статусы</option>
+        <option value="active">Активные</option>
+        <option value="inactive">Неактивные</option>
+        <option value="pending">Ожидают подтверждения</option>
+      </select>
 
-        <select v-model="roleFilter" @change="applyFilters" class="filter-select">
-          <option value="">Все роли</option>
-          <option value="admin">Администратор</option>
-          <option value="user">Пользователь</option>
-          <option value="moderator">Модератор</option>
-        </select>
-      </template>
+      <select v-model="roleFilter" @change="applyFilters" class="filter-select">
+        <option value="">Все роли</option>
+        <option value="admin">Администратор</option>
+        <option value="user">Пользователь</option>
+        <option value="moderator">Модератор</option>
+      </select>
+    </template>
 
-      <!-- Кастомизация ячейки статуса -->
-      <template #cell-status="{ value }">
-        <span :class="getStatusClass(value)" class="status-badge">
-          {{ getStatusText(value) }}
-        </span>
-      </template>
+    <!-- Кастомизация ячейки статуса -->
+    <template #cell-status="{ value }">
+      <span :class="getStatusClass(value)" class="status-badge">
+        {{ getStatusText(value) }}
+      </span>
+    </template>
 
-      <!-- Кастомизация ячейки аватара -->
-      <template #cell-avatar="{ value, row }">
-        <div class="user-avatar">
-          <img v-if="value" :src="value" :alt="row.original.name" class="avatar-image" />
-          <div v-else class="avatar-placeholder">
-            {{ getInitials(row.original.name) }}
-          </div>
-        </div>
-      </template>
-
-      <!-- Кастомизация ячейки действий -->
-      <template #cell-actions="{ row }">
-        <div class="table-actions">
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            left-icon="eye"
-            title="Просмотр"
-            @click.stop="viewUser(row.original)"
-          />
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            left-icon="edit"
-            title="Редактировать"
-            @click.stop="editUser(row.original)"
-          />
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            left-icon="trash-2"
-            title="Удалить"
-            :class="{ 'text-red-600': true }"
-            @click.stop="deleteUser(row.original)"
-          />
-        </div>
-      </template>
-
-      <!-- Кастомное пустое состояние -->
-      <template #empty="{ searchValue }">
-        <div class="custom-empty-state">
-          <BaseIcon :icon="searchValue ? 'search-x' : 'users'" :size="48" class="empty-icon" />
-          <h3 class="empty-title">
-            {{ searchValue ? 'Пользователи не найдены' : 'Нет пользователей' }}
-          </h3>
-          <p class="empty-description">
-            {{
-              searchValue
-                ? `Попробуйте изменить поисковый запрос "${searchValue}"`
-                : 'Начните с добавления первого пользователя'
-            }}
-          </p>
-          <BaseButton
-            v-if="!searchValue"
-            variant="primary"
-            left-icon="plus"
-            @click="showCreateDialog = true"
-          >
-            Добавить пользователя
-          </BaseButton>
-        </div>
-      </template>
-    </EnhancedBaseTable>
-
-    <!-- Диалог создания пользователя -->
-    <!-- <div v-if="showCreateDialog" class="dialog-overlay" @click="showCreateDialog = false">
-      <div class="dialog-content" @click.stop>
-        <h2>Добавить нового пользователя</h2>
-        <p>Здесь будет форма создания пользователя...</p>
-        <div class="dialog-actions">
-          <BaseButton variant="ghost" @click="showCreateDialog = false"> Отмена </BaseButton>
-          <BaseButton variant="primary" @click="createUser"> Создать </BaseButton>
+    <!-- Кастомизация ячейки аватара -->
+    <template #cell-avatar="{ value, row }">
+      <div class="user-avatar">
+        <img v-if="value" :src="value" :alt="row.original.name" class="avatar-image" />
+        <div v-else class="avatar-placeholder">
+          {{ getInitials(row.original.name) }}
         </div>
       </div>
-    </div> -->
+    </template>
 
-    <!-- Диалог просмотра пользователя -->
-    <div
-      v-if="selectedUser && showViewDialog"
-      class="dialog-overlay"
-      @click="showViewDialog = false"
-    >
-      <div class="dialog-content" @click.stop>
-        <h2>Информация о пользователе</h2>
-        <div class="user-details">
-          <div class="user-header">
-            <div class="user-avatar large">
-              <img
-                v-if="selectedUser.avatar"
-                :src="selectedUser.avatar"
-                :alt="selectedUser.name"
-                class="avatar-image"
-              />
-              <div v-else class="avatar-placeholder">
-                {{ getInitials(selectedUser.name) }}
-              </div>
-            </div>
-            <div class="user-info">
-              <h3>{{ selectedUser.name }}</h3>
-              <p>{{ selectedUser.email }}</p>
-              <span :class="getStatusClass(selectedUser.status)" class="status-badge">
-                {{ getStatusText(selectedUser.status) }}
-              </span>
+    <!-- Кастомизация ячейки действий -->
+    <template #cell-actions="{ row }">
+      <div class="table-actions">
+        <TableActionButton @click.stop="viewUser(row.original)" />
+      </div>
+    </template>
+
+    <!-- Кастомное пустое состояние -->
+    <template #empty="{ searchValue }">
+      <div class="custom-empty-state">
+        <BaseIcon :icon="searchValue ? 'search-x' : 'users'" :size="48" class="empty-icon" />
+        <h3 class="empty-title">
+          {{ searchValue ? 'Пользователи не найдены' : 'Нет пользователей' }}
+        </h3>
+        <p class="empty-description">
+          {{
+            searchValue
+              ? `Попробуйте изменить поисковый запрос "${searchValue}"`
+              : 'Начните с добавления первого пользователя'
+          }}
+        </p>
+        <BaseButton
+          v-if="!searchValue"
+          variant="primary"
+          left-icon="plus"
+          @click="showCreateDialog = true"
+        >
+          Добавить пользователя
+        </BaseButton>
+      </div>
+    </template>
+  </BaseTable>
+
+  <div v-if="selectedUser && showViewDialog" class="dialog-overlay" @click="showViewDialog = false">
+    <div class="dialog-content" @click.stop>
+      <h2>Информация о пользователе</h2>
+      <div class="user-details">
+        <div class="user-header">
+          <div class="user-avatar large">
+            <img
+              v-if="selectedUser.avatar"
+              :src="selectedUser.avatar"
+              :alt="selectedUser.name"
+              class="avatar-image"
+            />
+            <div v-else class="avatar-placeholder">
+              {{ getInitials(selectedUser.name) }}
             </div>
           </div>
-
-          <div class="user-details-grid">
-            <div class="detail-item">
-              <label>Роль:</label>
-              <span>{{ getRoleText(selectedUser.role) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Дата регистрации:</label>
-              <span>{{ formatDate(selectedUser.createdAt) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Последний вход:</label>
-              <span>{{
-                selectedUser.lastLogin ? formatDate(selectedUser.lastLogin) : 'Никогда'
-              }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Департамент:</label>
-              <span>{{ selectedUser.department || 'Не указан' }}</span>
-            </div>
+          <div class="user-info">
+            <h3>{{ selectedUser.name }}</h3>
+            <p>{{ selectedUser.email }}</p>
+            <span :class="getStatusClass(selectedUser.status)" class="status-badge">
+              {{ getStatusText(selectedUser.status) }}
+            </span>
           </div>
         </div>
 
-        <div class="dialog-actions">
-          <BaseButton variant="ghost" @click="showViewDialog = false"> Закрыть </BaseButton>
-          <BaseButton variant="primary" @click="editUser(selectedUser)"> Редактировать </BaseButton>
+        <div class="user-details-grid">
+          <div class="detail-item">
+            <label>Роль:</label>
+            <span>{{ getRoleText(selectedUser.role) }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Дата регистрации:</label>
+            <span>{{ formatDate(selectedUser.createdAt) }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Последний вход:</label>
+            <span>{{
+              selectedUser.lastLogin ? formatDate(selectedUser.lastLogin) : 'Никогда'
+            }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Департамент:</label>
+            <span>{{ selectedUser.department || 'Не указан' }}</span>
+          </div>
         </div>
+      </div>
+
+      <div class="dialog-actions">
+        <BaseButton variant="ghost" @click="showViewDialog = false"> Закрыть </BaseButton>
+        <BaseButton variant="primary" @click="editUser(selectedUser)"> Редактировать </BaseButton>
       </div>
     </div>
   </div>
@@ -197,12 +157,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
-import EnhancedBaseTable from '@/components/ui/BaseTable.vue'
+import BaseTable from '@/components/ui/BaseTable.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseIcon from '@/components/ui/BaseIcon.vue'
 import BaseDialog from '../ui/BaseDialog.vue'
 import AlertDialog from '../ui/ConfirmDialog.vue'
 import ConfirmDialog from '../ui/ConfirmDialog.vue'
+import BaseBadge from '../ui/BaseBadge.vue'
+import TableActionButton from '../ui/TableActionButton.vue'
 
 interface User {
   id: number
@@ -380,7 +342,7 @@ const generateMockUsers = (): User[] => {
   const roles = ['admin', 'user', 'moderator'] as const
   const statuses = ['active', 'inactive', 'pending'] as const
 
-  return Array.from({ length: 127 }, (_, i) => ({
+  return Array.from({ length: 1000 }, (_, i) => ({
     id: i + 1,
     name: names[i % names.length],
     email: `user${i + 1}@company.com`,
@@ -612,7 +574,6 @@ onMounted(() => {
 .table-actions {
   display: flex;
   align-items: center;
-  gap: var(--ds-spacing-xs);
 }
 
 .text-red-600 {
