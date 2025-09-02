@@ -13,14 +13,9 @@ const props = withDefaults(defineProps<SettingsButtonProps>(), {
   variant: 'ghost',
   isCollapsed: false,
 })
-
-defineEmits<{
-  click: [event: MouseEvent]
-}>()
 </script>
 <template>
   <BaseButton
-    @click="$emit('click', $event)"
     :icon-size="24"
     :icon-only="iconOnly"
     :left-icon="isCollapsed ? 'panel-left-open' : 'panel-left-close'"

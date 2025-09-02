@@ -1,16 +1,4 @@
 <script setup lang="ts">
-import BaseIcon from '@/components/ui/BaseIcon.vue'
-import {
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectItemIndicator,
-  SelectItemText,
-  SelectPortal,
-  SelectRoot,
-  SelectTrigger,
-  SelectViewport,
-} from 'reka-ui'
 import { type IconName } from '@/components/ui/BaseIcon.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import BaseSelect from '../ui/BaseSelect.vue'

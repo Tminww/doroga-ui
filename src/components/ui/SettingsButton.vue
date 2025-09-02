@@ -9,14 +9,9 @@ const props = withDefaults(defineProps<BaseButtonProps>(), {
   tooltipSide: 'bottom',
   tooltip: 'Настройки',
 })
-
-defineEmits<{
-  click: [event: MouseEvent]
-}>()
 </script>
 <template>
   <BaseButton
-    @click="$emit('click', $event)"
     :icon-only="iconOnly"
     :left-icon="leftIcon"
     :variant="variant"

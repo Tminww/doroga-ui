@@ -662,7 +662,6 @@ watch(
   background-color: var(--ds-surface-secondary);
   position: sticky;
   top: 0;
-  z-index: 10;
 }
 
 .base-table-cell--body {

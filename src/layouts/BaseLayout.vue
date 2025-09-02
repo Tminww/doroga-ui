@@ -310,7 +310,6 @@ const selectItem = (item: SidebarItem) => {
   border-bottom: 1px solid var(--ds-border);
   position: sticky;
   top: 0;
-  z-index: 100;
 }
 
 .header-content {

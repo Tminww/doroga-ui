@@ -8,10 +8,6 @@ const props = withDefaults(defineProps<BaseButtonProps>(), {
   title: 'Подробнее',
   size: 'md',
 })
-
-defineEmits<{
-  click: [event: MouseEvent]
-}>()
 </script>
 <template>
   <BaseButton

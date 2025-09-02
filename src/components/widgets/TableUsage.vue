@@ -24,9 +24,12 @@
     >
       <!-- Слот для действий в заголовке -->
       <template #actions>
-        <BaseButton variant="primary" left-icon="plus" @click="showCreateDialog = true">
-          Добавить пользователя
-        </BaseButton>
+        <ConfirmDialog>
+          <BaseButton variant="primary" left-icon="plus" @click="showCreateDialog = true">
+            Добавить пользователя
+          </BaseButton></ConfirmDialog
+        >
+
         <BaseButton variant="ghost" left-icon="download" @click="exportData"> Экспорт </BaseButton>
       </template>
 
@@ -119,7 +122,7 @@
     </EnhancedBaseTable>
 
     <!-- Диалог создания пользователя -->
-    <div v-if="showCreateDialog" class="dialog-overlay" @click="showCreateDialog = false">
+    <!-- <div v-if="showCreateDialog" class="dialog-overlay" @click="showCreateDialog = false">
       <div class="dialog-content" @click.stop>
         <h2>Добавить нового пользователя</h2>
         <p>Здесь будет форма создания пользователя...</p>
@@ -128,7 +131,7 @@
           <BaseButton variant="primary" @click="createUser"> Создать </BaseButton>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Диалог просмотра пользователя -->
     <div
@@ -197,6 +200,9 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import EnhancedBaseTable from '@/components/ui/BaseTable.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseIcon from '@/components/ui/BaseIcon.vue'
+import BaseDialog from '../ui/BaseDialog.vue'
+import AlertDialog from '../ui/ConfirmDialog.vue'
+import ConfirmDialog from '../ui/ConfirmDialog.vue'
 
 interface User {
   id: number

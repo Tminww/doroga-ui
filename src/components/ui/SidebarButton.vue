@@ -17,14 +17,9 @@ const props = withDefaults(defineProps<SettingsButtonProps>(), {
   active: false, // добавить эту строку
   isCollapsed: false, // добавить эту строку
 })
-
-defineEmits<{
-  click: [event: MouseEvent]
-}>()
 </script>
 <template>
   <BaseButton
-    @click="$emit('click', $event)"
     :icon-only="iconOnly"
     :icon-size="20"
     :left-icon="leftIcon"
