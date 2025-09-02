@@ -27,6 +27,7 @@
   --ds-gray-500: #6b7280;
   --ds-gray-600: #4b5563;
   --ds-gray-700: #374151;
+  --ds-gray-750: #323a47;
   --ds-gray-800: #1f2937;
   --ds-gray-900: #111827;
   --ds-gray-950: #030712;
@@ -74,7 +75,7 @@
   --ds-background: light-dark(var(--ds-gray-50), var(--ds-gray-900));
   --ds-background-secondary: light-dark(#ffffff, var(--ds-gray-800));
   --ds-surface: light-dark(#ffffff, var(--ds-gray-800));
-  --ds-surface-secondary: light-dark(var(--ds-gray-50), var(--ds-gray-700));
+  --ds-surface-secondary: light-dark(var(--ds-gray-50), var(--ds-gray-750));
 
   --ds-text-primary: light-dark(var(--ds-gray-900), var(--ds-gray-50));
   --ds-text-secondary: light-dark(var(--ds-gray-600), var(--ds-gray-300));
@@ -82,7 +83,7 @@
   --ds-text-inverse: light-dark(#ffffff, var(--ds-gray-900));
   --ds-text-accent: var(--ds-primary-600);
 
-  --ds-border: light-dark(var(--ds-gray-200), var(--ds-gray-700));
+  --ds-border: light-dark(var(--ds-gray-200), var(--ds-gray-600));
   --ds-border-secondary: light-dark(var(--ds-gray-300), var(--ds-gray-600));
   --ds-border-primary: light-dark(var(--ds-gray-300), var(--ds-gray-600));
   --ds-border-accent: var(--ds-primary-600);
@@ -93,7 +94,7 @@
   --ds-bg-active: light-dark(var(--ds-gray-200), var(--ds-gray-600));
 
   /* Component-specific colors using light-dark() */
-  --ds-button-primary-bg: var(--ds-primary-600);
+  --ds-button-primary-bg: light-dark(var(--ds-primary-600), var(--ds-primary-500));
   --ds-button-primary-bg-hover: var(--ds-primary-700);
   --ds-button-primary-text: #ffffff;
 
@@ -114,6 +115,21 @@
   --ds-button-danger-bg-hover: var(--ds-danger-700);
   --ds-button-danger-text: #ffffff;
 
+  /* Badge */
+  --ds-badge-primary-bg: light-dark(var(--ds-primary-100), var(--ds-primary-600));
+  --ds-badge-primary-text: light-dark(var(--ds-primary-600), var(--ds-primary-100));
+
+  --ds-badge-secondary-bg: light-dark(var(--ds-gray-200), var(--ds-gray-500));
+  --ds-badge-secondary-text: light-dark(var(--ds-gray-600), var(--ds-gray-100));
+
+  --ds-badge-danger-bg: light-dark(var(--ds-danger-200), var(--ds-danger-600));
+  --ds-badge-danger-text: light-dark(var(--ds-danger-700), var(--ds-danger-50));
+
+  --ds-badge-success-bg: light-dark(var(--ds-success-200), var(--ds-success-600));
+  --ds-badge-success-text: light-dark(var(--ds-success-700), var(--ds-success-100));
+
+  --ds-badge-warning-bg: light-dark(var(--ds-warning-200), var(--ds-warning-600));
+  --ds-badge-warning-text: light-dark(var(--ds-warning-700), var(--ds-warning-50));
   /* Ghost Button Colors */
   --ds-button-ghost-bg-hover: light-dark(var(--ds-gray-100), var(--ds-gray-700));
   --ds-button-ghost-border-hover: light-dark(var(--ds-gray-300), var(--ds-gray-600));
