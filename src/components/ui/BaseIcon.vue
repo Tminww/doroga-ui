@@ -38,9 +38,11 @@ import {
   Filter,
   Goal,
   Hospital,
+  Info,
   LayoutDashboard,
   LayoutList,
   Menu,
+  MessageCircleWarning,
   Minus,
   Monitor,
   Moon,
@@ -131,6 +133,8 @@ const ICON_MAP = {
   'chevrons-left': ChevronsLeft,
   'chevrons-right': ChevronsRight,
   'arrow-up-down': ArrowUpDown,
+  info: Info,
+  warning: MessageCircleWarning,
   // Пример использования иконки из Material Design Icons
   doctor: mdiDoctor,
 } as const
@@ -147,8 +151,6 @@ export interface BaseIconProps {
   size?: number
   /** Толщина линий иконки */
   strokeWidth?: number
-  /** Дополнительные CSS классы */
-  class?: string
 }
 
 const props = withDefaults(defineProps<BaseIconProps>(), {
@@ -176,7 +178,7 @@ const iconComponent = computed((): Component => {
   return IconComponent as LucideIcon
 })
 
-const iconClasses = computed(() => ['base-icon', props.class])
+const iconClasses = computed(() => ['base-icon'])
 </script>
 
 <style scoped>

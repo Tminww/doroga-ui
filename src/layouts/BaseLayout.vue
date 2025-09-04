@@ -177,7 +177,7 @@ const selectItem = (item: SidebarItem) => {
 }
 </script>
 <template>
-  <TooltipProvider :delay-duration="400" :skip-delay-duration="150">
+  <TooltipProvider :delay-duration="400" :skip-delay-duration="0">
     <div class="layout">
       <!-- Header -->
       <header class="header">

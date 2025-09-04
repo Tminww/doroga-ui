@@ -1,31 +1,58 @@
 <template>
-  <!-- Таблица -->
-  <div class="base-table-container" :class="tableContainerClasses">
-    <table class="base-table" :class="tableClasses">
-      <thead class="base-table-header-row">
-        <tr
-          v-for="headerGroup in table.getHeaderGroups()"
-          :key="headerGroup.id"
-          class="base-table-row base-table-row--header"
-        >
-          <th
-            v-for="header in headerGroup.headers"
-            :key="header.id"
-            class="base-table-cell base-table-cell--header"
-            :class="getCellClasses(header.column)"
-            :style="getColumnStyle(header)"
+  <div class="base-table-wrapper">
+    <!-- Заголовок и действия -->
+    <div v-if="title || $slots.header || $slots.actions" class="base-table-header">
+      <div class="base-table-title-section">
+        <h3 v-if="title" class="base-table-title">{{ title }}</h3>
+        <slot name="header" />
+      </div>
+      <div v-if="$slots.actions" class="base-table-actions">
+        <slot name="actions" />
+      </div>
+    </div>
+
+    <!-- Фильтры и поиск -->
+    <div v-if="searchable || $slots.filters" class="base-table-controls">
+      <BaseInput
+        v-if="searchable"
+        v-model="searchValue"
+        :placeholder="searchPlaceholder"
+        left-icon="search"
+        clearable
+        class="base-table-search"
+        :loading="searchLoading"
+        @input="handleSearchInput"
+        @clear="handleSearchClear"
+      />
+      <slot name="filters" />
+    </div>
+
+    <!-- Таблица -->
+    <div class="base-table-container" :class="tableContainerClasses">
+      <table class="base-table" :class="tableClasses">
+        <thead class="base-table-header-row">
+          <tr
+            v-for="headerGroup in table.getHeaderGroups()"
+            :key="headerGroup.id"
+            class="base-table-row base-table-row--header"
           >
-            <div
-              v-if="!header.isPlaceholder"
-              class="base-table-header-content"
-              :class="{
-                'base-table-header-content--sortable': header.column.getCanSort() && sortable,
-                'base-table-header-content--sorting':
-                  sortLoading && currentSortColumn === header.column.id,
-              }"
-              @click="handleSort(header.column)"
+            <th
+              v-for="header in headerGroup.headers"
+              :key="header.id"
+              class="base-table-cell base-table-cell--header"
+              :class="getCellClasses(header.column)"
+              :style="getColumnStyle(header)"
             >
-              <div>
+              <div
+                v-if="!header.isPlaceholder"
+                class="base-table-header-content"
+                :class="{
+                  'base-table-header-content--sortable': header.column.getCanSort() && sortable,
+                  'base-table-header-content--sorting':
+                    sortLoading && currentSortColumn === header.column.id,
+                }"
+                @click="handleSort(header.column)"
+              >
                 <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
 
                 <!-- Индикатор сортировки -->
@@ -43,68 +70,165 @@
                     class="base-table-sort-icon"
                   />
                 </template>
-                <input type="text" @click.stop />
               </div>
-            </div>
-          </th>
-        </tr>
-      </thead>
-
-      <tbody class="base-table-body">
-        <template v-if="!loading && table.getRowModel().rows.length">
-          <tr
-            v-for="row in table.getRowModel().rows"
-            :key="row.id"
-            class="base-table-row base-table-row--body"
-            :class="getRowClasses(row)"
-            @click="handleRowClick(row)"
-          >
-            <td
-              v-for="cell in row.getVisibleCells()"
-              :key="cell.id"
-              class="base-table-cell base-table-cell--body"
-              :class="getCellClasses(cell.column)"
-            >
-              <!-- Слот для кастомизации содержимого ячейки -->
-              <slot
-                :name="`cell-${cell.column.id}`"
-                :cell="cell"
-                :row="row"
-                :value="cell.getValue()"
-              >
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              </slot>
-            </td>
+            </th>
           </tr>
-        </template>
-      </tbody>
-    </table>
+        </thead>
 
-    <!-- Состояние загрузки -->
-    <div v-if="loading" class="base-table-loading">
-      <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
-      <span>{{ loadingText }}</span>
+        <tbody class="base-table-body">
+          <template v-if="!loading && table.getRowModel().rows.length">
+            <tr
+              v-for="row in table.getRowModel().rows"
+              :key="row.id"
+              class="base-table-row base-table-row--body"
+              :class="getRowClasses(row)"
+              @click="handleRowClick(row)"
+            >
+              <td
+                v-for="cell in row.getVisibleCells()"
+                :key="cell.id"
+                class="base-table-cell base-table-cell--body"
+                :class="getCellClasses(cell.column)"
+              >
+                <!-- Слот для кастомизации содержимого ячейки -->
+                <slot
+                  :name="`cell-${cell.column.id}`"
+                  :cell="cell"
+                  :row="row"
+                  :value="cell.getValue()"
+                >
+                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                </slot>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+
+      <!-- Состояние загрузки -->
+      <div v-if="loading" class="base-table-loading">
+        <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
+        <span>{{ loadingText }}</span>
+      </div>
+
+      <!-- Пустое состояние -->
+      <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
+        <slot name="empty" :search-value="searchValue">
+          <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
+          <div class="base-table-empty-content">
+            <span class="base-table-empty-title">
+              {{ searchValue ? 'Ничего не найдено' : emptyText }}
+            </span>
+            <span v-if="searchValue" class="base-table-empty-subtitle">
+              Попробуйте изменить поисковый запрос
+            </span>
+          </div>
+        </slot>
+      </div>
     </div>
 
-    <!-- Пустое состояние -->
-    <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
-      <slot name="empty" :search-value="searchValue">
-        <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
-        <div class="base-table-empty-content">
-          <span class="base-table-empty-title">
-            {{ searchValue ? 'Ничего не найдено' : emptyText }}
-          </span>
-          <span v-if="searchValue" class="base-table-empty-subtitle">
-            Попробуйте изменить поисковый запрос
-          </span>
-        </div>
+    <!-- Информация о результатах -->
+    <div v-if="showResultsInfo && !loading" class="base-table-results-info">
+      <slot
+        name="results-info"
+        :total="totalItems"
+        :filtered="filteredItems"
+        :visible="table.getRowModel().rows.length"
+      >
+        <span class="base-table-results-text">
+          <template v-if="searchValue">
+            Найдено {{ filteredItems }} из {{ totalItems }} записей
+          </template>
+          <template v-else>
+            Показано {{ table.getRowModel().rows.length }} из {{ totalItems }} записей
+          </template>
+        </span>
       </slot>
+    </div>
+
+    <!-- Пагинация -->
+    <div v-if="showPagination && totalPages > 1 && !loading" class="base-table-pagination">
+      <div class="base-table-pagination-info">
+        <span class="base-table-pagination-text">
+          Страница {{ currentPage }} из {{ totalPages }}
+        </span>
+
+        <!-- Выбор размера страницы -->
+        <div v-if="showPageSizeSelector" class="base-table-page-size">
+          <span class="base-table-page-size-label">Показать:</span>
+          <select
+            :value="pageSize"
+            @change="handlePageSizeChange"
+            class="base-table-page-size-select"
+            :disabled="loading"
+          >
+            <option v-for="size in pageSizeOptions" :key="size" :value="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="base-table-pagination-controls">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          left-icon="chevrons-left"
+          :disabled="currentPage === 1 || paginationLoading"
+          @click="goToPage(1)"
+          title="Первая страница"
+        />
+
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          left-icon="chevron-left"
+          :disabled="currentPage === 1 || paginationLoading"
+          @click="goToPage(currentPage - 1)"
+          title="Предыдущая страница"
+        />
+
+        <!-- Номера страниц -->
+        <div class="base-table-pagination-pages">
+          <template v-for="page in visiblePages" :key="page">
+            <BaseButton
+              v-if="page !== '...'"
+              variant="ghost"
+              size="sm"
+              :class="{ 'base-table-page-active': page === currentPage }"
+              :disabled="paginationLoading"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </BaseButton>
+            <span v-else class="base-table-pagination-ellipsis">...</span>
+          </template>
+        </div>
+
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          right-icon="chevron-right"
+          :disabled="currentPage === totalPages || paginationLoading"
+          @click="goToPage(currentPage + 1)"
+          title="Следующая страница"
+        />
+
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          right-icon="chevrons-right"
+          :disabled="currentPage === totalPages || paginationLoading"
+          @click="goToPage(totalPages)"
+          title="Последняя страница"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import {
   type ColumnDef,
   type SortDirection,
@@ -118,7 +242,7 @@ import BaseIcon, { type IconName } from './BaseIcon.vue'
 import BaseInput from './BaseInput.vue'
 import BaseButton from './BaseButton.vue'
 
-export interface BaseTableProps<TData> {
+export interface BaseTableProps<TData = any> {
   /** Данные таблицы */
   data: TData[]
   /** Конфигурация колонок */
@@ -197,7 +321,7 @@ export interface BaseTableProps<TData> {
   selectedRows?: TData[]
 }
 
-const props = withDefaults(defineProps<BaseTableProps<any>>(), {
+const props = withDefaults(defineProps<BaseTableProps<TData>>(), {
   searchPlaceholder: 'Поиск...',
   searchDebounce: 300,
   showPagination: true,
@@ -242,7 +366,12 @@ const emit = defineEmits<{
 
 // Поиск
 const searchValue = ref(props.searchValue || '')
+const searchTimeoutId = ref<NodeJS.Timeout | null>(null)
 const currentSortColumn = ref<string | null>(null)
+
+// Вычисляемые свойства
+const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize))
+const actualFilteredItems = computed(() => props.filteredItems ?? props.totalItems)
 
 // Настройка TanStack Table
 const table = useVueTable({
@@ -269,6 +398,44 @@ const tableContainerClasses = computed(() => [
 ])
 
 const tableClasses = computed(() => [`base-table--${props.size}`])
+
+// Получение видимых страниц для пагинации
+const visiblePages = computed(() => {
+  const pages: (number | string)[] = []
+  const current = props.currentPage
+  const total = totalPages.value
+
+  if (total <= 7) {
+    // Показываем все страницы
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Сложная логика для большого количества страниц
+    pages.push(1)
+
+    if (current > 4) {
+      pages.push('...')
+    }
+
+    const start = Math.max(2, current - 1)
+    const end = Math.min(total - 1, current + 1)
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+
+    if (current < total - 3) {
+      pages.push('...')
+    }
+
+    if (total > 1) {
+      pages.push(total)
+    }
+  }
+
+  return pages
+})
 
 // Получение стилей колонки
 const getColumnStyle = (header: any) => {
@@ -326,6 +493,25 @@ const getRowClasses = (row: Row<TData>) => {
   return classes
 }
 
+// Обработчики событий
+const handleSearchInput = () => {
+  if (searchTimeoutId.value) {
+    clearTimeout(searchTimeoutId.value)
+  }
+
+  searchTimeoutId.value = setTimeout(() => {
+    emit('search', searchValue.value)
+  }, props.searchDebounce)
+}
+
+const handleSearchClear = () => {
+  searchValue.value = ''
+  if (searchTimeoutId.value) {
+    clearTimeout(searchTimeoutId.value)
+  }
+  emit('search-clear')
+}
+
 const handleSort = (column: Column<TData>) => {
   if (!props.sortable || !column.getCanSort()) return
 
@@ -347,6 +533,18 @@ const handleSort = (column: Column<TData>) => {
 const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
   const mouseEvent = event || new MouseEvent('click')
   emit('row-click', row, mouseEvent)
+}
+
+const goToPage = (page: number) => {
+  if (page !== props.currentPage && page >= 1 && page <= totalPages.value) {
+    emit('page-change', page)
+  }
+}
+
+const handlePageSizeChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const newSize = parseInt(target.value)
+  emit('page-size-change', newSize)
 }
 
 // Следим за внешними изменениями поиска

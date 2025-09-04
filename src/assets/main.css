@@ -130,6 +130,15 @@
 
   --ds-badge-warning-bg: light-dark(var(--ds-warning-200), var(--ds-warning-600));
   --ds-badge-warning-text: light-dark(var(--ds-warning-700), var(--ds-warning-50));
+
+  /* Toast */
+
+  --ds-toast-primary-bg: light-dark(var(--ds-primary-50), var(--ds-gray-800));
+  --ds-toast-secondary-bg: light-dark(var(--ds-gray-50), var(--ds-gray-800));
+  --ds-toast-success-bg: light-dark(var(--ds-success-50), var(--ds-gray-800));
+  --ds-toast-warning-bg: light-dark(var(--ds-warning-50), var(--ds-gray-800));
+  --ds-toast-danger-bg: light-dark(var(--ds-danger-50), var(--ds-gray-800));
+
   /* Ghost Button Colors */
   --ds-button-ghost-bg-hover: light-dark(var(--ds-gray-100), var(--ds-gray-700));
   --ds-button-ghost-border-hover: light-dark(var(--ds-gray-300), var(--ds-gray-600));
@@ -162,7 +171,7 @@
   --ds-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --ds-tooltip-shadow: 0 0px 20px 5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --ds-select-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-
+  --ds-toast-shadow: 0 0px 20px 5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   /* Typography */
   --ds-font-size-xs: 0.75rem; /* 12px */
   --ds-font-size-sm: 0.875rem; /* 14px */

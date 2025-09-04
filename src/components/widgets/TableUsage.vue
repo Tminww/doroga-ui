@@ -23,11 +23,10 @@
   >
     <!-- Слот для действий в заголовке -->
     <template #actions>
-      <ConfirmDialog @click:ok="console.log('OK')">
-        <BaseButton variant="primary" left-icon="plus" @click="showCreateDialog = true">
-          Добавить пользователя
-        </BaseButton></ConfirmDialog
-      >
+      <BaseProgress class="toast-progress" variant="primary" :progress-value="50" />
+      <BaseToast>
+        <!-- <BaseButton variant="primary" left-icon="plus"> Добавить пользователя </BaseButton> -->
+      </BaseToast>
 
       <BaseButton variant="ghost" left-icon="download" @click="exportData"> Экспорт </BaseButton>
     </template>
@@ -165,6 +164,8 @@ import AlertDialog from '../ui/ConfirmDialog.vue'
 import ConfirmDialog from '../ui/ConfirmDialog.vue'
 import BaseBadge from '../ui/BaseBadge.vue'
 import TableActionButton from '../ui/TableActionButton.vue'
+import BaseToast from '../ui/BaseToast.vue'
+import BaseProgress from '../ui/BaseProgress.vue'
 
 interface User {
   id: number
