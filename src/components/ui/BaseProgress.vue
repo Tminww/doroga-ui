@@ -7,14 +7,15 @@ interface BaseProgressProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning'
   max?: number
   rounded?: 'buttom' | 'top' | 'full'
+  animated?: boolean // добавляем prop для контроля анимации
 }
 
 const props = withDefaults(defineProps<BaseProgressProps>(), {
   progressValue: 0,
   variant: 'primary',
   max: 100,
-
   rounded: 'full',
+  animated: false, // по умолчанию отключаем CSS анимацию
 })
 
 const progressRootClasses = computed(() => [
@@ -22,7 +23,11 @@ const progressRootClasses = computed(() => [
   props.rounded === 'full' ? 'rounded' : '',
 ])
 
-const progressIndicatorClasses = computed(() => ['progress-indicator', `${props.variant}`])
+const progressIndicatorClasses = computed(() => [
+  'progress-indicator',
+  `${props.variant}`,
+  props.animated ? 'animated' : '', // добавляем класс только если нужна анимация
+])
 </script>
 
 <template>
@@ -57,10 +62,14 @@ const progressIndicatorClasses = computed(() => ['progress-indicator', `${props.
   background-color: transparent;
   width: 100%;
   height: 100%;
-  transition: transform 660ms cubic-bezier(0.65, 0, 0.35, 1);
+  transition: transform 100ms ease-out; /* плавный переход для JS анимации */
   transform-origin: left center;
+}
 
-  animation: progress-animation 3 linear forwards;
+/* CSS анимация применяется только когда есть класс animated */
+.progress-indicator.animated {
+  animation: progress-animation 3s linear forwards;
+  transition: none; /* отключаем transition для CSS анимации */
 }
 
 .progress-indicator.primary {

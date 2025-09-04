@@ -8,7 +8,7 @@ import {
   ToastTitle,
   ToastViewport,
 } from 'reka-ui'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import BaseButton from './BaseButton.vue'
 import BaseIcon, { type IconName } from './BaseIcon.vue'
 import BaseProgress from './BaseProgress.vue'
@@ -28,36 +28,95 @@ const props = withDefaults(defineProps<BaseToastProps>(), {
   showIcon: true,
   duration: 3000,
 })
+
 const open = ref(false)
 const timerRef = ref(0)
 const progressValue = ref(100)
+const isPaused = ref(false)
+const progressIntervalRef = ref(0)
+
+function startProgressAnimation() {
+  progressValue.value = 100
+  isPaused.value = false
+
+  const updateInterval = 50 // обновляем каждые 50мс
+  const step = 100 / (props.duration / updateInterval) // сколько процентов убавлять за каждый шаг
+
+  progressIntervalRef.value = window.setInterval(() => {
+    if (!isPaused.value) {
+      progressValue.value = Math.max(0, progressValue.value - step)
+    }
+
+    if (progressValue.value <= 0) {
+      window.clearInterval(progressIntervalRef.value)
+    }
+  }, updateInterval)
+}
+
+function stopProgressAnimation() {
+  if (progressIntervalRef.value) {
+    window.clearInterval(progressIntervalRef.value)
+    progressIntervalRef.value = 0
+  }
+}
+
+function pauseProgress() {
+  isPaused.value = true
+}
+
+function resumeProgress() {
+  isPaused.value = false
+}
+
+function clearProgressAnimation() {
+  stopProgressAnimation()
+  isPaused.value = false
+}
 
 function handleClick() {
   open.value = false
+  clearProgressAnimation()
   window.clearTimeout(timerRef.value)
+
   timerRef.value = window.setTimeout(() => {
     open.value = true
   }, 100)
 }
 
-const icon = computed(() => {
-  switch (props.variant) {
-    case 'primary':
-      return 'info'
-    case 'secondary':
-      return 'info'
-    case 'danger':
-      return 'monitor'
-    case 'success':
-      return 'check'
-    case 'warning':
-      return 'warning'
-    default:
-      return props.variant
+// Запускаем анимацию прогресса когда тост открывается
+watch(open, (newValue) => {
+  if (newValue) {
+    startProgressAnimation()
+  } else {
+    clearProgressAnimation()
   }
 })
 
-const persentLeft = computed(() => {})
+// Очищаем таймеры при размонтировании компонента
+onUnmounted(() => {
+  stopProgressAnimation()
+  if (timerRef.value) {
+    window.clearTimeout(timerRef.value)
+  }
+})
+
+const icon = computed(() => {
+  switch (props.variant) {
+    case 'primary':
+      return 'info' // или 'bell' для уведомлений
+    case 'secondary':
+      return 'message-circle' // или 'info'
+    case 'danger':
+      return 'alert-circle' // или 'x-circle', 'alert-triangle'
+    case 'success':
+      return 'check-circle' // или 'check', 'check-circle-2'
+    case 'warning':
+      return 'alert-triangle' // или 'alert-circle'
+    default:
+      return 'info'
+  }
+})
+
 const iconClasses = computed(() => ['toast-icon', `${props.variant}`])
 const toastClasses = computed(() => ['toast-root', `${props.variant}`])
 </script>
@@ -72,7 +131,12 @@ const toastClasses = computed(() => ['toast-root', `${props.variant}`])
       </slot>
     </div>
 
-    <ToastRoot v-model:open="open" :class="toastClasses">
+    <ToastRoot
+      v-model:open="open"
+      :class="toastClasses"
+      @pause="pauseProgress"
+      @resume="resumeProgress"
+    >
       <!-- <ToastPortal to="body"> -->
       <BaseIcon v-if="showIcon" :class="iconClasses" :icon="icon" :size="25"></BaseIcon>
       <ToastTitle class="toast-title"> {{ title }} </ToastTitle>

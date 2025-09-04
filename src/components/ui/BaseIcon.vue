@@ -12,6 +12,7 @@
 import { computed, defineComponent, h, type Component } from 'vue'
 import {
   Activity,
+  AlertCircle,
   AlertTriangle,
   ArrowUpDown,
   BarChart2,
@@ -22,6 +23,7 @@ import {
   Bell,
   Building,
   Check,
+  CheckCircle,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -42,6 +44,7 @@ import {
   LayoutDashboard,
   LayoutList,
   Menu,
+  MessageCircle,
   MessageCircleWarning,
   Minus,
   Monitor,
@@ -135,6 +138,10 @@ const ICON_MAP = {
   'arrow-up-down': ArrowUpDown,
   info: Info,
   warning: MessageCircleWarning,
+  'message-circle': MessageCircle,
+  'alert-circle': AlertCircle,
+  'check-circle': CheckCircle,
+
   // Пример использования иконки из Material Design Icons
   doctor: mdiDoctor,
 } as const

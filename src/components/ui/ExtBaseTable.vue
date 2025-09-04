@@ -1,30 +1,32 @@
 <template>
   <div class="base-table-wrapper">
     <!-- Заголовок и действия -->
-    <div v-if="title || $slots.header || $slots.actions" class="base-table-header">
-      <div class="base-table-title-section">
-        <h3 v-if="title" class="base-table-title">{{ title }}</h3>
-        <slot name="header" />
+    <div v-if="title || $slots.actions" class="base-table-header">
+      <div v-if="title" class="base-table-title-section">
+        <h3 class="base-table-title">{{ title }}</h3>
       </div>
-      <div v-if="$slots.actions" class="base-table-actions">
+      <div class="base-table-actions">
         <slot name="actions" />
       </div>
     </div>
 
-    <!-- Фильтры и поиск -->
-    <div v-if="searchable || $slots.filters" class="base-table-controls">
-      <BaseInput
-        v-if="searchable"
-        v-model="searchValue"
-        :placeholder="searchPlaceholder"
-        left-icon="search"
-        clearable
-        class="base-table-search"
-        :loading="searchLoading"
-        @input="handleSearchInput"
-        @clear="handleSearchClear"
-      />
-      <slot name="filters" />
+    <!-- Контролы -->
+    <div v-if="searchable || $slots.controls" class="base-table-controls">
+      <div v-if="searchable" class="base-table-search">
+        <BaseInput
+          v-model="searchValue"
+          :placeholder="searchPlaceholder"
+          :loading="searchLoading"
+          clearable
+          @input="handleSearch"
+          @clear="handleSearchClear"
+        >
+          <template #prefix>
+            <BaseIcon icon="search" :size="16" />
+          </template>
+        </BaseInput>
+      </div>
+      <slot name="controls" />
     </div>
 
     <!-- Таблица -->
@@ -43,33 +45,61 @@
               :class="getCellClasses(header.column)"
               :style="getColumnStyle(header)"
             >
-              <div
-                v-if="!header.isPlaceholder"
-                class="base-table-header-content"
-                :class="{
-                  'base-table-header-content--sortable': header.column.getCanSort() && sortable,
-                  'base-table-header-content--sorting':
-                    sortLoading && currentSortColumn === header.column.id,
-                }"
-                @click="handleSort(header.column)"
-              >
-                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+              <div v-if="!header.isPlaceholder" class="base-table-header-wrapper">
+                <!-- Основной заголовок с сортировкой -->
+                <div
+                  class="base-table-header-content"
+                  :class="{
+                    'base-table-header-content--sortable': header.column.getCanSort() && sortable,
+                    'base-table-header-content--sorting':
+                      sortLoading && currentSortColumn === header.column.id,
+                  }"
+                  @click="handleSort(header.column)"
+                >
+                  <FlexRender
+                    :render="header.column.columnDef.header"
+                    :props="header.getContext()"
+                  />
 
-                <!-- Индикатор сортировки -->
-                <template v-if="sortable && header.column.getCanSort()">
-                  <BaseIcon
-                    v-if="sortLoading && currentSortColumn === header.column.id"
-                    icon="refresh-cw"
-                    :size="14"
-                    class="base-table-sort-loading"
-                  />
-                  <BaseIcon
-                    v-else
-                    :icon="getSortIcon(header.column.getIsSorted())"
-                    :size="14"
-                    class="base-table-sort-icon"
-                  />
-                </template>
+                  <!-- Индикатор сортировки -->
+                  <template v-if="sortable && header.column.getCanSort()">
+                    <BaseIcon
+                      v-if="sortLoading && currentSortColumn === header.column.id"
+                      icon="refresh-cw"
+                      :size="14"
+                      class="base-table-sort-loading"
+                    />
+                    <BaseIcon
+                      v-else
+                      :icon="getSortIcon(header.column.getIsSorted())"
+                      :size="14"
+                      class="base-table-sort-icon"
+                    />
+                  </template>
+                </div>
+
+                <!-- Фильтр колонки -->
+                <div
+                  v-if="filterable && header.column.columnDef.enableColumnFilter !== false"
+                  class="base-table-column-filter"
+                >
+                  <slot
+                    :name="`filter-${header.column.id}`"
+                    :column="header.column"
+                    :filter-value="getColumnFilterValue(header.column.id)"
+                    :on-filter="(value) => handleColumnFilter(header.column.id, value)"
+                  >
+                    <!-- Дефолтный фильтр -->
+                    <component
+                      :is="getFilterComponent(header.column)"
+                      :model-value="getColumnFilterValue(header.column.id)"
+                      :column="header.column"
+                      :options="getFilterOptions(header.column)"
+                      :loading="filterLoading && currentFilterColumn === header.column.id"
+                      @update:model-value="(value) => handleColumnFilter(header.column.id, value)"
+                    />
+                  </slot>
+                </div>
               </div>
             </th>
           </tr>
@@ -127,108 +157,94 @@
       </div>
     </div>
 
-    <!-- Информация о результатах -->
-    <div v-if="showResultsInfo && !loading" class="base-table-results-info">
-      <slot
-        name="results-info"
-        :total="totalItems"
-        :filtered="filteredItems"
-        :visible="table.getRowModel().rows.length"
-      >
-        <span class="base-table-results-text">
-          <template v-if="searchValue">
-            Найдено {{ filteredItems }} из {{ totalItems }} записей
-          </template>
-          <template v-else>
-            Показано {{ table.getRowModel().rows.length }} из {{ totalItems }} записей
-          </template>
-        </span>
-      </slot>
-    </div>
-
     <!-- Пагинация -->
-    <div v-if="showPagination && totalPages > 1 && !loading" class="base-table-pagination">
-      <div class="base-table-pagination-info">
-        <span class="base-table-pagination-text">
-          Страница {{ currentPage }} из {{ totalPages }}
+    <div v-if="showPagination" class="base-table-footer">
+      <div class="base-table-results-info">
+        <span class="base-table-results-text">
+          Показано {{ startItem }}-{{ endItem }} из {{ totalItems }} записей
+          <template v-if="filteredItems !== undefined && filteredItems !== totalItems">
+            (отфильтровано из {{ filteredItems }})
+          </template>
         </span>
-
-        <!-- Выбор размера страницы -->
-        <div v-if="showPageSizeSelector" class="base-table-page-size">
-          <span class="base-table-page-size-label">Показать:</span>
-          <select
-            :value="pageSize"
-            @change="handlePageSizeChange"
-            class="base-table-page-size-select"
-            :disabled="loading"
-          >
-            <option v-for="size in pageSizeOptions" :key="size" :value="size">
-              {{ size }}
-            </option>
-          </select>
-        </div>
       </div>
 
-      <div class="base-table-pagination-controls">
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          left-icon="chevrons-left"
-          :disabled="currentPage === 1 || paginationLoading"
-          @click="goToPage(1)"
-          title="Первая страница"
-        />
-
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          left-icon="chevron-left"
-          :disabled="currentPage === 1 || paginationLoading"
-          @click="goToPage(currentPage - 1)"
-          title="Предыдущая страница"
-        />
-
-        <!-- Номера страниц -->
-        <div class="base-table-pagination-pages">
-          <template v-for="page in visiblePages" :key="page">
-            <BaseButton
-              v-if="page !== '...'"
-              variant="ghost"
-              size="sm"
-              :class="{ 'base-table-page-active': page === currentPage }"
+      <div class="base-table-pagination">
+        <div class="base-table-pagination-info">
+          <div v-if="showPageSizeSelector" class="base-table-page-size">
+            <span class="base-table-page-size-label">Показать:</span>
+            <select
+              :value="pageSize"
+              class="base-table-page-size-select"
               :disabled="paginationLoading"
-              @click="goToPage(page)"
+              @change="handlePageSizeChange"
             >
-              {{ page }}
-            </BaseButton>
-            <span v-else class="base-table-pagination-ellipsis">...</span>
-          </template>
+              <option v-for="size in pageSizeOptions" :key="size" :value="size">
+                {{ size }}
+              </option>
+            </select>
+          </div>
         </div>
 
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          right-icon="chevron-right"
-          :disabled="currentPage === totalPages || paginationLoading"
-          @click="goToPage(currentPage + 1)"
-          title="Следующая страница"
-        />
+        <div class="base-table-pagination-controls">
+          <BaseButton
+            variant="outline"
+            size="sm"
+            :disabled="currentPage <= 1 || paginationLoading"
+            @click="handlePageChange(1)"
+          >
+            <BaseIcon icon="chevrons-left" :size="14" />
+          </BaseButton>
 
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          right-icon="chevrons-right"
-          :disabled="currentPage === totalPages || paginationLoading"
-          @click="goToPage(totalPages)"
-          title="Последняя страница"
-        />
+          <BaseButton
+            variant="outline"
+            size="sm"
+            :disabled="currentPage <= 1 || paginationLoading"
+            @click="handlePageChange(currentPage - 1)"
+          >
+            <BaseIcon icon="chevron-left" :size="14" />
+          </BaseButton>
+
+          <div class="base-table-pagination-pages">
+            <template v-for="page in visiblePages" :key="page">
+              <span v-if="page === '...'" class="base-table-pagination-ellipsis">...</span>
+              <BaseButton
+                v-else
+                variant="outline"
+                size="sm"
+                :class="{ 'base-table-page-active': page === currentPage }"
+                :disabled="paginationLoading"
+                @click="handlePageChange(page)"
+              >
+                {{ page }}
+              </BaseButton>
+            </template>
+          </div>
+
+          <BaseButton
+            variant="outline"
+            size="sm"
+            :disabled="currentPage >= totalPages || paginationLoading"
+            @click="handlePageChange(currentPage + 1)"
+          >
+            <BaseIcon icon="chevron-right" :size="14" />
+          </BaseButton>
+
+          <BaseButton
+            variant="outline"
+            size="sm"
+            :disabled="currentPage >= totalPages || paginationLoading"
+            @click="handlePageChange(totalPages)"
+          >
+            <BaseIcon icon="chevrons-right" :size="14" />
+          </BaseButton>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import {
   type ColumnDef,
   type SortDirection,
@@ -241,8 +257,29 @@ import {
 import BaseIcon, { type IconName } from './BaseIcon.vue'
 import BaseInput from './BaseInput.vue'
 import BaseButton from './BaseButton.vue'
+import BaseSelect from './BaseSelect.vue'
+// import BaseDatePicker from './BaseDatePicker.vue'
+// import BaseNumberInput from './BaseNumberInput.vue'
 
-export interface BaseTableProps<TData = any> {
+// Типы фильтров
+export type FilterType =
+  | 'text'
+  | 'select'
+  | 'multiselect'
+  | 'date'
+  | 'dateRange'
+  | 'number'
+  | 'numberRange'
+  | 'boolean'
+
+export interface ColumnFilterConfig {
+  type?: FilterType
+  options?: Array<{ label: string; value: any }>
+  placeholder?: string
+  multiple?: boolean
+}
+
+export interface BaseTableProps<TData> {
   /** Данные таблицы */
   data: TData[]
   /** Конфигурация колонок */
@@ -259,6 +296,12 @@ export interface BaseTableProps<TData = any> {
   searchValue?: string
   /** Задержка поиска в мс */
   searchDebounce?: number
+
+  // Фильтрация
+  /** Включить фильтрацию колонок */
+  filterable?: boolean
+  /** Значения фильтров колонок */
+  columnFilters?: Record<string, any>
 
   // Пагинация
   /** Показать пагинацию */
@@ -291,6 +334,8 @@ export interface BaseTableProps<TData = any> {
   searchLoading?: boolean
   /** Загрузка сортировки */
   sortLoading?: boolean
+  /** Загрузка фильтрации */
+  filterLoading?: boolean
   /** Загрузка пагинации */
   paginationLoading?: boolean
 
@@ -321,9 +366,11 @@ export interface BaseTableProps<TData = any> {
   selectedRows?: TData[]
 }
 
-const props = withDefaults(defineProps<BaseTableProps<TData>>(), {
+const props = withDefaults(defineProps<BaseTableProps<any>>(), {
   searchPlaceholder: 'Поиск...',
   searchDebounce: 300,
+  filterable: true,
+  columnFilters: () => ({}),
   showPagination: true,
   currentPage: 1,
   pageSize: 10,
@@ -334,6 +381,7 @@ const props = withDefaults(defineProps<BaseTableProps<TData>>(), {
   loading: false,
   searchLoading: false,
   sortLoading: false,
+  filterLoading: false,
   paginationLoading: false,
   loadingText: 'Загрузка...',
   emptyText: 'Нет данных для отображения',
@@ -351,6 +399,11 @@ const emit = defineEmits<{
   search: [query: string]
   'search-clear': []
 
+  // События фильтрации
+  'column-filter': [column: string, value: any]
+  'filter-clear': [column: string]
+  'filters-clear': []
+
   // События пагинации
   'page-change': [page: number]
   'page-size-change': [size: number]
@@ -364,14 +417,12 @@ const emit = defineEmits<{
   'selection-change': [selectedRows: TData[]]
 }>()
 
-// Поиск
+// Реактивные переменные
 const searchValue = ref(props.searchValue || '')
-const searchTimeoutId = ref<NodeJS.Timeout | null>(null)
 const currentSortColumn = ref<string | null>(null)
-
-// Вычисляемые свойства
-const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize))
-const actualFilteredItems = computed(() => props.filteredItems ?? props.totalItems)
+const currentFilterColumn = ref<string | null>(null)
+const searchDebounceTimer = ref<NodeJS.Timeout | null>(null)
+const filterDebounceTimers = ref<Record<string, NodeJS.Timeout>>({})
 
 // Настройка TanStack Table
 const table = useVueTable({
@@ -387,7 +438,49 @@ const table = useVueTable({
   manualFiltering: true,
 })
 
-// Классы
+// Вычисляемые свойства
+const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize))
+
+const startItem = computed(() => (props.currentPage - 1) * props.pageSize + 1)
+
+const endItem = computed(() => Math.min(props.currentPage * props.pageSize, props.totalItems))
+
+const visiblePages = computed(() => {
+  const pages: (number | string)[] = []
+  const total = totalPages.value
+  const current = props.currentPage
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    pages.push(1)
+
+    if (current <= 4) {
+      for (let i = 2; i <= 5; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 3) {
+      pages.push('...')
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i)
+      }
+    } else {
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+
+  return pages
+})
+
 const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
   {
@@ -399,43 +492,45 @@ const tableContainerClasses = computed(() => [
 
 const tableClasses = computed(() => [`base-table--${props.size}`])
 
-// Получение видимых страниц для пагинации
-const visiblePages = computed(() => {
-  const pages: (number | string)[] = []
-  const current = props.currentPage
-  const total = totalPages.value
+// Методы для работы с фильтрами
+const getColumnFilterValue = (columnId: string) => {
+  return props.columnFilters[columnId] || null
+}
 
-  if (total <= 7) {
-    // Показываем все страницы
-    for (let i = 1; i <= total; i++) {
-      pages.push(i)
-    }
-  } else {
-    // Сложная логика для большого количества страниц
-    pages.push(1)
+const getFilterComponent = (column: Column<any>) => {
+  const filterConfig = column.columnDef.meta?.filter as ColumnFilterConfig
+  const filterType = filterConfig?.type || 'text'
 
-    if (current > 4) {
-      pages.push('...')
-    }
+  switch (filterType) {
+    case 'select':
+    case 'multiselect':
+      return BaseSelect
+    case 'date':
+    case 'dateRange':
+      return BaseSelect
+    case 'number':
+    case 'numberRange':
+      return BaseSelect
+    case 'boolean':
+      return BaseSelect
+    default:
+      return BaseInput
+  }
+}
 
-    const start = Math.max(2, current - 1)
-    const end = Math.min(total - 1, current + 1)
+const getFilterOptions = (column: Column<any>) => {
+  const filterConfig = column.columnDef.meta?.filter as ColumnFilterConfig
 
-    for (let i = start; i <= end; i++) {
-      pages.push(i)
-    }
-
-    if (current < total - 3) {
-      pages.push('...')
-    }
-
-    if (total > 1) {
-      pages.push(total)
-    }
+  if (filterConfig?.type === 'boolean') {
+    return [
+      { label: 'Все', value: null },
+      { label: 'Да', value: true },
+      { label: 'Нет', value: false },
+    ]
   }
 
-  return pages
-})
+  return filterConfig?.options || []
+}
 
 // Получение стилей колонки
 const getColumnStyle = (header: any) => {
@@ -494,22 +589,37 @@ const getRowClasses = (row: Row<TData>) => {
 }
 
 // Обработчики событий
-const handleSearchInput = () => {
-  if (searchTimeoutId.value) {
-    clearTimeout(searchTimeoutId.value)
+const handleSearch = (query: string) => {
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
   }
 
-  searchTimeoutId.value = setTimeout(() => {
-    emit('search', searchValue.value)
+  searchDebounceTimer.value = setTimeout(() => {
+    emit('search', query)
   }, props.searchDebounce)
 }
 
 const handleSearchClear = () => {
   searchValue.value = ''
-  if (searchTimeoutId.value) {
-    clearTimeout(searchTimeoutId.value)
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
   }
   emit('search-clear')
+}
+
+const handleColumnFilter = (columnId: string, value: any) => {
+  currentFilterColumn.value = columnId
+
+  // Очищаем предыдущий таймер для этой колонки
+  if (filterDebounceTimers.value[columnId]) {
+    clearTimeout(filterDebounceTimers.value[columnId])
+  }
+
+  // Устанавливаем новый таймер
+  filterDebounceTimers.value[columnId] = setTimeout(() => {
+    emit('column-filter', columnId, value)
+    currentFilterColumn.value = null
+  }, props.searchDebounce)
 }
 
 const handleSort = (column: Column<TData>) => {
@@ -535,8 +645,8 @@ const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
   emit('row-click', row, mouseEvent)
 }
 
-const goToPage = (page: number) => {
-  if (page !== props.currentPage && page >= 1 && page <= totalPages.value) {
+const handlePageChange = (page: number) => {
+  if (page !== props.currentPage) {
     emit('page-change', page)
   }
 }
@@ -556,6 +666,18 @@ watch(
     }
   },
 )
+
+// Очистка таймеров при размонтировании
+onMounted(() => {
+  return () => {
+    if (searchDebounceTimer.value) {
+      clearTimeout(searchDebounceTimer.value)
+    }
+    Object.values(filterDebounceTimers.value).forEach((timer) => {
+      if (timer) clearTimeout(timer)
+    })
+  }
+})
 </script>
 
 <style scoped>
@@ -698,6 +820,12 @@ watch(
 }
 
 /* Заголовок колонки */
+.base-table-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-xs);
+}
+
 .base-table-header-content {
   display: flex;
   align-items: center;
@@ -728,6 +856,11 @@ watch(
 .base-table-sort-loading {
   animation: spin 1s linear infinite;
   color: var(--ds-text-primary);
+}
+
+/* Фильтры колонок */
+.base-table-column-filter {
+  min-width: 120px;
 }
 
 /* Состояния */
@@ -778,11 +911,17 @@ watch(
   font-size: var(--ds-font-size-xs);
 }
 
-/* Информация о результатах */
+/* Информация о результатах и пагинация */
+.base-table-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-md);
+}
+
 .base-table-results-info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 0 var(--ds-spacing-sm);
 }
 
@@ -908,6 +1047,10 @@ watch(
     flex-wrap: wrap;
     justify-content: center;
   }
+
+  .base-table-column-filter {
+    min-width: 100px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -919,6 +1062,10 @@ watch(
   .base-table-pagination-pages {
     order: -1;
     margin-bottom: var(--ds-spacing-sm);
+  }
+
+  .base-table-column-filter {
+    min-width: 80px;
   }
 }
 </style>
