@@ -122,37 +122,35 @@ const toastClasses = computed(() => ['toast-root', `${props.variant}`])
 </script>
 
 <template>
-  <ToastProvider :duration="duration">
-    <div @click="handleClick">
-      <slot>
-        <BaseButton variant="secondary" right-icon="chevrons-right">
-          Отобразить сообщение
-        </BaseButton>
-      </slot>
-    </div>
+  <div @click="handleClick">
+    <slot>
+      <BaseButton variant="secondary" right-icon="chevrons-right">
+        Отобразить сообщение
+      </BaseButton>
+    </slot>
+  </div>
 
-    <ToastRoot
-      v-model:open="open"
-      :class="toastClasses"
-      @pause="pauseProgress"
-      @resume="resumeProgress"
-    >
-      <!-- <ToastPortal to="body"> -->
-      <BaseIcon v-if="showIcon" :class="iconClasses" :icon="icon" :size="25"></BaseIcon>
-      <ToastTitle class="toast-title"> {{ title }} </ToastTitle>
-      <ToastDescription as-child>
-        <div class="toast-description">
-          {{ message }}
-        </div>
-      </ToastDescription>
-      <ToastAction class="toast-action" alt-text="Goto schedule to undo">
-        <BaseButton size="sm" :variant="variant">Закрыть</BaseButton>
-      </ToastAction>
-      <BaseProgress class="toast-progress" :variant="variant" :progress-value="progressValue" />
-      <!-- </ToastPortal> -->
-    </ToastRoot>
-    <ToastViewport class="toast-viewport" />
-  </ToastProvider>
+  <ToastRoot
+    v-model:open="open"
+    :class="toastClasses"
+    @pause="pauseProgress"
+    @resume="resumeProgress"
+  >
+    <!-- <ToastPortal to="body"> -->
+    <BaseIcon v-if="showIcon" :class="iconClasses" :icon="icon" :size="25"></BaseIcon>
+    <ToastTitle class="toast-title"> {{ title }} </ToastTitle>
+    <ToastDescription as-child>
+      <div class="toast-description">
+        {{ message }}
+      </div>
+    </ToastDescription>
+    <ToastAction class="toast-action" alt-text="Goto schedule to undo">
+      <BaseButton size="sm" :variant="variant">Закрыть</BaseButton>
+    </ToastAction>
+    <BaseProgress class="toast-progress" :variant="variant" :progress-value="progressValue" />
+    <!-- </ToastPortal> -->
+  </ToastRoot>
+  <ToastViewport class="toast-viewport" />
 </template>
 
 <style scoped>

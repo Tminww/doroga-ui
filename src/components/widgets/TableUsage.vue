@@ -31,6 +31,7 @@
       <!-- Кастомный фильтр для статуса -->
       <template #filter-status="{ onFilter, filterValue }">
         <BaseSelect
+          :items="status"
           :model-value="filterValue"
           :options="statusOptions"
           placeholder="Все статусы"

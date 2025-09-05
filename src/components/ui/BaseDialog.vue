@@ -16,6 +16,7 @@ import { ref, watch } from 'vue'
 interface BaseDialogProps {
   title?: string
   subTitle?: string
+  open?: boolean
   closeOnlyButton?: boolean
   useCloseButton?: boolean
   useCancelButton?: boolean
@@ -25,9 +26,10 @@ interface BaseDialogProps {
   okButtonProps?: BaseButtonProps
 }
 
-withDefaults(defineProps<BaseDialogProps>(), {
+const props = withDefaults(defineProps<BaseDialogProps>(), {
   title: 'Диалоговое окно',
   subTitle: 'Описание',
+  open: false,
   closeOnlyButton: false,
   useCloseButton: false,
   useCancelButton: true,
@@ -71,18 +73,15 @@ withDefaults(defineProps<BaseDialogProps>(), {
 const emit = defineEmits<{
   'click:ok': [event: MouseEvent]
   'click:close': [event: MouseEvent]
+  'update:modelValue': [open: boolean]
 }>()
 
-const open = ref(false)
-
-// watch(open, () => {
-//   console.log(open.value)
-// })
+const open = ref(props.open)
 </script>
 <template>
   <div>
-    <DialogRoot v-model:open="open">
-      <DialogTrigger as-child> <slot name="default"></slot></DialogTrigger>
+    <DialogRoot :open="open" @update:open="(value) => (open = value)">
+      <DialogTrigger as-child> <slot name="default"> </slot></DialogTrigger>
       <DialogPortal to="body">
         <DialogOverlay class="dialog-overlay" />
         <DialogContent

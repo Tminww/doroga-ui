@@ -292,12 +292,31 @@
           <SidebarButton />
           <SidebarButton :is-collapsed="true" />
 
-          <BaseSelect />
+          <BaseSelect
+            :items="[
+              { name: 'Первый', value: 1 },
+              { name: 'Второй', value: 2 },
+            ]"
+          />
           <BaseBadge title="Какой-то статус" variant="warning" />
           <BaseBadge title="Какой-то статус" variant="danger" />
           <BaseBadge title="Какой-то статус" variant="primary" />
           <BaseBadge title="Какой-то статус" variant="success" />
           <BaseBadge title="Какой-то статус" variant="secondary" />
+          <BaseDialog> <BaseButton title="Simple Dialog" /></BaseDialog>
+          <ConfirmDialog> <BaseButton variant="danger" title="Confirm Dialog" /></ConfirmDialog>
+          <BaseToast variant="primary">
+            <BaseButton variant="secondary" title="Info Toast"
+          /></BaseToast>
+          <BaseToast variant="secondary">
+            <BaseButton variant="secondary" title="Simple Toast"
+          /></BaseToast>
+          <BaseToast variant="warning">
+            <BaseButton variant="secondary" title="Warning Toast"
+          /></BaseToast>
+          <BaseToast variant="danger">
+            <BaseButton variant="secondary" title="Danger Toast"
+          /></BaseToast>
         </div>
         <div class="example-content"></div>
       </div>
@@ -398,18 +417,18 @@
   <section class="component-demo">
     <h3 class="component-demo-title">Таблицы</h3>
     <div class="component-demo-content">
-      <BaseTable
-        :data="tableData"
-        :columns="tableColumns"
-        title="Пользователи"
-        searchable
-        :page-size="20"
-        @row-click="handleRowClick"
-      >
-        <template #actions>
-          <BaseButton variant="primary">Добавить</BaseButton>
+      <BaseTable :data="tableData" :headers="tableColumns">
+        <template #cell-role="{ value }">
+          <BaseBadge :title="value" variant="secondary" />
         </template>
-      </BaseTable>
+        <template #cell-actions="{ row }">
+          <BaseButton
+            @click="console.log(row)"
+            variant="secondary"
+            title="Подробнее"
+            size="sm"
+          /> </template
+      ></BaseTable>
     </div>
   </section>
   <section class="component-demo">
@@ -443,39 +462,46 @@ import { h } from 'vue'
 import SidebarToggleButton from '@/components/ui/SidebarToggleButton.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import TableUsage from '@/components/widgets/TableUsage.vue'
+import BaseDialog from '@/components/ui/BaseDialog.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import BaseToast from '@/components/ui/BaseToast.vue'
 
 const tableColumns = [
   {
     accessorKey: 'id',
-    id: 'id',
-    header: 'ID',
-    cell: (info) => info.getValue(),
+    name: 'ID',
   },
   {
     accessorKey: 'name',
-    id: 'name',
-    header: 'Имя',
-    cell: (info) => h('span', info.getValue()),
+    name: 'Имя',
   },
   {
     accessorKey: 'email',
-    id: 'email',
-    header: 'Email',
+    name: 'Email',
   },
   {
     accessorKey: 'role',
-    id: 'role',
-    header: 'Роль',
+    name: 'Роль',
   },
   {
     accessorKey: 'createdAt',
-    id: 'createdAt',
-    header: 'Дата регистрации',
+    name: 'Дата регистрации',
+  },
+  {
+    accessorKey: 'actions',
+    name: 'Действия',
   },
 ]
 
 const tableData = ref([
-  { id: 1, name: 'Иван Петров', email: 'ivan@example.com', role: 'Админ', createdAt: '2024-03-10' },
+  {
+    id: 1,
+    name: 'Иван Петров',
+    email: 'ivan@example.com',
+    role: 'Админ',
+    createdAt: '2024-03-10',
+    actions: 'hui',
+  },
   {
     id: 2,
     name: 'Анна Смирнова',
@@ -496,6 +522,7 @@ const tableData = ref([
     email: 'olga@example.com',
     role: 'Пользователь',
     createdAt: '2024-07-01',
+    actions: 'hui',
   },
   {
     id: 5,

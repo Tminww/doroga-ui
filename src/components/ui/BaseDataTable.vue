@@ -1,135 +1,110 @@
 <template>
-  <div class="base-table-wrapper">
-    <!-- Таблица -->
-    <div class="base-table-container" :class="tableContainerClasses">
-      <table class="base-table" :class="tableClasses">
-        <thead class="base-table-header-row">
-          <tr
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-            class="base-table-row base-table-row--header"
+  <!-- Таблица -->
+  <div class="base-table-container" :class="tableContainerClasses">
+    <table class="base-table" :class="tableClasses">
+      <thead class="base-table-header-row">
+        <tr
+          v-for="headerGroup in table.getHeaderGroups()"
+          :key="headerGroup.id"
+          class="base-table-row base-table-row--header"
+        >
+          <th
+            v-for="header in headerGroup.headers"
+            :key="header.id"
+            class="base-table-cell base-table-cell--header"
+            :class="getCellClasses(header.column)"
+            :style="getColumnStyle(header)"
           >
-            <th
-              v-for="header in headerGroup.headers"
-              :key="header.id"
-              class="base-table-cell base-table-cell--header"
+            <div
+              v-if="!header.isPlaceholder"
+              class="base-table-header-content"
+              :class="{
+                'base-table-header-content--sortable': header.column.getCanSort() && sortable,
+                'base-table-header-content--sorting':
+                  sortLoading && currentSortColumn === header.column.id,
+              }"
+              @click="handleSort(header.column)"
             >
-              <div v-if="!header.isPlaceholder" class="base-table-header-wrapper">
-                <!-- Основной заголовок с сортировкой -->
-                <div
-                  class="base-table-header-content"
-                  :class="{
-                    'base-table-header-content--sortable': header.column.getCanSort() && sortable,
-                    'base-table-header-content--sorting':
-                      sortLoading && currentSortColumn === header.column.id,
-                  }"
-                  @click="handleSort(header.column)"
-                >
-                  <div>
-                    <FlexRender
-                      :render="header.column.columnDef.header"
-                      :props="header.getContext()"
-                    />
-                    <!-- Индикатор сортировки -->
-                    <template v-if="sortable && header.column.getCanSort()">
-                      <BaseIcon
-                        v-if="sortLoading && currentSortColumn === header.column.id"
-                        icon="refresh-cw"
-                        :size="14"
-                        class="base-table-sort-loading"
-                      />
-                      <BaseIcon
-                        v-else
-                        :icon="getSortIcon(header.column.getIsSorted())"
-                        :size="14"
-                        class="base-table-sort-icon"
-                      />
-                    </template>
-                  </div>
-                  <!-- Фильтр колонки -->
-                  <div
-                    v-if="filterable && header.column.columnDef.enableColumnFilter !== false"
-                    class="base-table-column-filter"
-                  >
-                    <slot
-                      :name="`filter-${header.column.id}`"
-                      :column="header.column"
-                      :filter-value="getColumnFilterValue(header.column.id)"
-                      :on-filter="(value) => handleColumnFilter(header.column.id, value)"
-                    >
-                      <!-- Дефолтный фильтр -->
-                      <component
-                        :is="getFilterComponent(header.column)"
-                        :model-value="getColumnFilterValue(header.column.id)"
-                        :column="header.column"
-                        :options="getFilterOptions(header.column)"
-                        :loading="filterLoading && currentFilterColumn === header.column.id"
-                        @update:model-value="(value) => handleColumnFilter(header.column.id, value)"
-                      />
-                    </slot>
-                  </div>
-                </div>
+              <div>
+                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+
+                <!-- Индикатор сортировки -->
+                <template v-if="sortable && header.column.getCanSort()">
+                  <BaseIcon
+                    v-if="sortLoading && currentSortColumn === header.column.id"
+                    icon="refresh-cw"
+                    :size="14"
+                    class="base-table-sort-loading"
+                  />
+                  <BaseIcon
+                    v-else
+                    :icon="getSortIcon(header.column.getIsSorted())"
+                    :size="14"
+                    class="base-table-sort-icon"
+                  />
+                </template>
+                <input type="text" @click.stop />
               </div>
-            </th>
-          </tr>
-        </thead>
+            </div>
+          </th>
+        </tr>
+      </thead>
 
-        <tbody class="base-table-body">
-          <template v-if="!loading && table.getRowModel().rows.length">
-            <tr
-              v-for="row in table.getRowModel().rows"
-              :key="row.id"
-              class="base-table-row base-table-row--body"
-              :class="getRowClasses(row)"
-              @click="handleRowClick(row)"
+      <tbody class="base-table-body">
+        <template v-if="!loading && table.getRowModel().rows.length">
+          <tr
+            v-for="row in table.getRowModel().rows"
+            :key="row.id"
+            class="base-table-row base-table-row--body"
+            :class="getRowClasses(row)"
+            @click="handleRowClick(row)"
+          >
+            <td
+              v-for="cell in row.getVisibleCells()"
+              :key="cell.id"
+              class="base-table-cell base-table-cell--body"
+              :class="getCellClasses(cell.column)"
             >
-              <td
-                v-for="cell in row.getVisibleCells()"
-                :key="cell.id"
-                class="base-table-cell base-table-cell--body"
-                :class="getCellClasses(cell.column)"
+              <!-- Слот для кастомизации содержимого ячейки -->
+              <slot
+                :name="`cell-${cell.column.id}`"
+                :cell="cell"
+                :row="row"
+                :value="cell.getValue()"
               >
-                <!-- Слот для кастомизации содержимого ячейки -->
-                <slot
-                  :name="`cell-${cell.column.id}`"
-                  :cell="cell"
-                  :row="row"
-                  :value="cell.getValue()"
-                >
-                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                </slot>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
+                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+              </slot>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
 
-      <!-- Состояние загрузки -->
-      <div v-if="loading" class="base-table-loading">
-        <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
-        <span>{{ loadingText }}</span>
-      </div>
+    <!-- Состояние загрузки -->
+    <div v-if="loading" class="base-table-loading">
+      <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
+      <span>{{ loadingText }}</span>
+    </div>
 
-      <!-- Пустое состояние -->
-      <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
-        <slot name="empty" :search-value="searchValue">
-          <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
-          <div class="base-table-empty-content">
-            <span class="base-table-empty-title">
-              {{ searchValue ? 'Ничего не найдено' : emptyText }}
-            </span>
-            <span v-if="searchValue" class="base-table-empty-subtitle">
-              Попробуйте изменить поисковый запрос
-            </span>
-          </div>
-        </slot>
-      </div>
+    <!-- Пустое состояние -->
+    <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
+      <slot name="empty" :search-value="searchValue">
+        <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
+        <div class="base-table-empty-content">
+          <span class="base-table-empty-title">
+            {{ searchValue ? 'Ничего не найдено' : emptyText }}
+          </span>
+          <span v-if="searchValue" class="base-table-empty-subtitle">
+            Попробуйте изменить поисковый запрос
+          </span>
+        </div>
+      </slot>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   type ColumnDef,
   type SortDirection,
@@ -142,27 +117,6 @@ import {
 import BaseIcon, { type IconName } from './BaseIcon.vue'
 import BaseInput from './BaseInput.vue'
 import BaseButton from './BaseButton.vue'
-import BaseSelect from './BaseSelect.vue'
-// import BaseDatePicker from './BaseDatePicker.vue'
-// import BaseNumberInput from './BaseNumberInput.vue'
-
-// Типы фильтров
-export type FilterType =
-  | 'text'
-  | 'select'
-  | 'multiselect'
-  | 'date'
-  | 'dateRange'
-  | 'number'
-  | 'numberRange'
-  | 'boolean'
-
-export interface ColumnFilterConfig {
-  type?: FilterType
-  options?: Array<{ label: string; value: any }>
-  placeholder?: string
-  multiple?: boolean
-}
 
 export interface BaseTableProps<TData> {
   /** Данные таблицы */
@@ -181,12 +135,6 @@ export interface BaseTableProps<TData> {
   searchValue?: string
   /** Задержка поиска в мс */
   searchDebounce?: number
-
-  // Фильтрация
-  /** Включить фильтрацию колонок */
-  filterable?: boolean
-  /** Значения фильтров колонок */
-  columnFilters?: Record<string, any>
 
   // Пагинация
   /** Показать пагинацию */
@@ -219,8 +167,6 @@ export interface BaseTableProps<TData> {
   searchLoading?: boolean
   /** Загрузка сортировки */
   sortLoading?: boolean
-  /** Загрузка фильтрации */
-  filterLoading?: boolean
   /** Загрузка пагинации */
   paginationLoading?: boolean
 
@@ -254,8 +200,6 @@ export interface BaseTableProps<TData> {
 const props = withDefaults(defineProps<BaseTableProps<any>>(), {
   searchPlaceholder: 'Поиск...',
   searchDebounce: 300,
-  filterable: true,
-  columnFilters: () => ({}),
   showPagination: true,
   currentPage: 1,
   pageSize: 10,
@@ -266,7 +210,6 @@ const props = withDefaults(defineProps<BaseTableProps<any>>(), {
   loading: false,
   searchLoading: false,
   sortLoading: false,
-  filterLoading: false,
   paginationLoading: false,
   loadingText: 'Загрузка...',
   emptyText: 'Нет данных для отображения',
@@ -284,11 +227,6 @@ const emit = defineEmits<{
   search: [query: string]
   'search-clear': []
 
-  // События фильтрации
-  'column-filter': [column: string, value: any]
-  'filter-clear': [column: string]
-  'filters-clear': []
-
   // События пагинации
   'page-change': [page: number]
   'page-size-change': [size: number]
@@ -302,12 +240,9 @@ const emit = defineEmits<{
   'selection-change': [selectedRows: TData[]]
 }>()
 
-// Реактивные переменные
+// Поиск
 const searchValue = ref(props.searchValue || '')
 const currentSortColumn = ref<string | null>(null)
-const currentFilterColumn = ref<string | null>(null)
-const searchDebounceTimer = ref<NodeJS.Timeout | null>(null)
-const filterDebounceTimers = ref<Record<string, NodeJS.Timeout>>({})
 
 // Настройка TanStack Table
 const table = useVueTable({
@@ -323,9 +258,7 @@ const table = useVueTable({
   manualFiltering: true,
 })
 
-// Вычисляемые свойства
-const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize))
-
+// Классы
 const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
   {
@@ -337,49 +270,27 @@ const tableContainerClasses = computed(() => [
 
 const tableClasses = computed(() => [`base-table--${props.size}`])
 
-// Методы для работы с фильтрами
-const getColumnFilterValue = (columnId: string) => {
-  return props.columnFilters[columnId] || null
-}
+// Получение стилей колонки
+const getColumnStyle = (header: any) => {
+  const styles: Record<string, string> = {}
 
-const getFilterComponent = (column: Column<any>) => {
-  const filterConfig = column.columnDef.meta?.filter as ColumnFilterConfig
-  const filterType = filterConfig?.type || 'text'
-
-  switch (filterType) {
-    case 'select':
-    case 'multiselect':
-      return BaseSelect
-    case 'date':
-    case 'dateRange':
-      return BaseSelect
-    case 'number':
-    case 'numberRange':
-      return BaseSelect
-    case 'boolean':
-      return BaseSelect
-    default:
-      return BaseInput
-  }
-}
-
-const getFilterOptions = (column: Column<any>) => {
-  const filterConfig = column.columnDef.meta?.filter as ColumnFilterConfig
-
-  if (filterConfig?.type === 'boolean') {
-    return [
-      { label: 'Все', value: null },
-      { label: 'Да', value: true },
-      { label: 'Нет', value: false },
-    ]
+  if (header.getSize() !== 150) {
+    styles.width = `${header.getSize()}px`
   }
 
-  return filterConfig?.options || []
+  if (header.column.columnDef.minWidth) {
+    styles.minWidth = `${header.column.columnDef.minWidth}px`
+  }
+
+  if (header.column.columnDef.maxWidth) {
+    styles.maxWidth = `${header.column.columnDef.maxWidth}px`
+  }
+
+  return styles
 }
 
 // Получение иконки сортировки
 const getSortIcon = (sortDirection: false | SortDirection): IconName => {
-  console.log(sortDirection)
   if (sortDirection === 'asc') return 'trending-up'
   if (sortDirection === 'desc') return 'trending-down'
   return 'arrow-up-down'
@@ -415,21 +326,6 @@ const getRowClasses = (row: Row<TData>) => {
   return classes
 }
 
-const handleColumnFilter = (columnId: string, value: any) => {
-  currentFilterColumn.value = columnId
-
-  // Очищаем предыдущий таймер для этой колонки
-  if (filterDebounceTimers.value[columnId]) {
-    clearTimeout(filterDebounceTimers.value[columnId])
-  }
-
-  // Устанавливаем новый таймер
-  filterDebounceTimers.value[columnId] = setTimeout(() => {
-    emit('column-filter', columnId, value)
-    currentFilterColumn.value = null
-  }, props.searchDebounce)
-}
-
 const handleSort = (column: Column<TData>) => {
   if (!props.sortable || !column.getCanSort()) return
 
@@ -453,18 +349,6 @@ const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
   emit('row-click', row, mouseEvent)
 }
 
-const handlePageChange = (page: number) => {
-  if (page !== props.currentPage) {
-    emit('page-change', page)
-  }
-}
-
-const handlePageSizeChange = (event: Event) => {
-  const target = event.target as HTMLSelectElement
-  const newSize = parseInt(target.value)
-  emit('page-size-change', newSize)
-}
-
 // Следим за внешними изменениями поиска
 watch(
   () => props.searchValue,
@@ -474,18 +358,6 @@ watch(
     }
   },
 )
-
-// Очистка таймеров при размонтировании
-onMounted(() => {
-  return () => {
-    if (searchDebounceTimer.value) {
-      clearTimeout(searchDebounceTimer.value)
-    }
-    Object.values(filterDebounceTimers.value).forEach((timer) => {
-      if (timer) clearTimeout(timer)
-    })
-  }
-})
 </script>
 
 <style scoped>
@@ -628,12 +500,6 @@ onMounted(() => {
 }
 
 /* Заголовок колонки */
-.base-table-header-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-xs);
-}
-
 .base-table-header-content {
   display: flex;
   align-items: center;
@@ -664,11 +530,6 @@ onMounted(() => {
 .base-table-sort-loading {
   animation: spin 1s linear infinite;
   color: var(--ds-text-primary);
-}
-
-/* Фильтры колонок */
-.base-table-column-filter {
-  min-width: 120px;
 }
 
 /* Состояния */
@@ -719,17 +580,11 @@ onMounted(() => {
   font-size: var(--ds-font-size-xs);
 }
 
-/* Информация о результатах и пагинация */
-.base-table-footer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-md);
-}
-
+/* Информация о результатах */
 .base-table-results-info {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 0 var(--ds-spacing-sm);
 }
 
@@ -855,10 +710,6 @@ onMounted(() => {
     flex-wrap: wrap;
     justify-content: center;
   }
-
-  .base-table-column-filter {
-    min-width: 100px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -870,10 +721,6 @@ onMounted(() => {
   .base-table-pagination-pages {
     order: -1;
     margin-bottom: var(--ds-spacing-sm);
-  }
-
-  .base-table-column-filter {
-    min-width: 80px;
   }
 }
 </style>

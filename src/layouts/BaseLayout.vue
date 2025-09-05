@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { TooltipProvider } from 'reka-ui'
+import { TooltipProvider, ToastProvider } from 'reka-ui'
 import { useRouter } from 'vue-router'
 
 import SidebarButton from '@/components/ui/SidebarButton.vue'
@@ -13,6 +13,7 @@ import BaseAvatar from '@/components/ui/BaseAvatar.vue'
 import SettingsButton from '@/components/ui/SettingsButton.vue'
 import NotifyButton from '@/components/ui/NotifyButton.vue'
 import AboutUser from '@/components/widgets/AboutUser.vue'
+import BaseToastProvider from '@/components/BaseToastProvider.vue'
 
 interface SidebarItem {
   id: string
@@ -236,7 +237,9 @@ const selectItem = (item: SidebarItem) => {
           <p>Активная страница: {{ activeItem }}</p>
 
           <!-- Содержимое страниц можно отображать через слот -->
-          <slot name="main"> </slot>
+          <ToastProvider :duration="3000">
+            <slot name="main"> </slot>
+          </ToastProvider>
         </div>
       </main>
     </div>
