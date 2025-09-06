@@ -29,6 +29,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronsUpDown,
   ChevronUp,
   ClipboardList,
   Download,
@@ -141,6 +142,7 @@ const ICON_MAP = {
   'message-circle': MessageCircle,
   'alert-circle': AlertCircle,
   'check-circle': CheckCircle,
+  'chevrons-up-down': ChevronsUpDown,
 
   // Пример использования иконки из Material Design Icons
   doctor: mdiDoctor,

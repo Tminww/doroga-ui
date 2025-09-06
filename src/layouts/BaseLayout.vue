@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { TooltipProvider, ToastProvider } from 'reka-ui'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import SidebarButton from '@/components/ui/SidebarButton.vue'
 import SidebarToggleButton from '@/components/ui/SidebarToggleButton.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
 import { type IconName } from '@/components/ui/BaseIcon.vue'
-import BaseSelect from '@/components/ui/BaseSelect.vue'
 import ThemeSwitcher from '@/components/widgets/ThemeSwitcher.vue'
-import BaseAvatar from '@/components/ui/BaseAvatar.vue'
 import SettingsButton from '@/components/ui/SettingsButton.vue'
 import NotifyButton from '@/components/ui/NotifyButton.vue'
 import AboutUser from '@/components/widgets/AboutUser.vue'
-import BaseToastProvider from '@/components/BaseToastProvider.vue'
 
 interface SidebarItem {
   id: string
@@ -29,7 +25,8 @@ interface SidebarCategory {
 }
 
 const router = useRouter()
-const activeItem = ref('dashboard')
+const route = useRoute()
+const activeItem = ref(route.name || 'dashboard')
 const isCollapsed = ref(false)
 const appTitle = ref('ЛИС Дорога')
 
@@ -176,6 +173,15 @@ const selectItem = (item: SidebarItem) => {
     router.push({ name: item.routeName })
   }
 }
+
+watch(
+  () => route.name,
+  (newName) => {
+    console.log('Маршрут сменился:', newName)
+    activeItem.value = newName || 'dashboard'
+  },
+  { immediate: true },
+)
 </script>
 <template>
   <TooltipProvider :delay-duration="400" :skip-delay-duration="0">

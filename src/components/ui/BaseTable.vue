@@ -1,41 +1,5 @@
 <template>
-  <!-- Таблица -->
   <div :class="tableContainerClasses">
-    <table :class="tableClasses">
-      <thead class="base-table-header-row">
-        <tr class="base-table-row base-table-row--header">
-          <th
-            v-for="header in table.headers"
-            :key="header.accessorKey"
-            class="base-table-cell base-table-cell--header"
-          >
-            <div class="base-table-header-content">
-              {{ header.name }}
-            </div>
-          </th>
-        </tr>
-      </thead>
-
-      <tbody class="base-table-body">
-        <tr
-          v-for="(row, index) in table.rows"
-          :key="`row-${index}`"
-          class="base-table-row base-table-row--body"
-          :class="getRowClasses(row)"
-          @click="handleRowClick(row)"
-        >
-          <td
-            v-for="[cellKey, cellValue] in Object.entries(row)"
-            :key="`cell-${index}-${cellKey}`"
-            class="base-table-cell base-table-cell--body"
-          >
-            <!-- Слот для кастомизации содержимого ячейки -->
-            <slot :name="`cell-${cellKey}`" :row="row" :value="cellValue"> {{ cellValue }} </slot>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
     <!-- Состояние загрузки -->
     <div v-if="loading" class="base-table-loading">
       <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
@@ -43,7 +7,7 @@
     </div>
 
     <!-- Пустое состояние -->
-    <div v-else-if="table.rows.length === 0" class="base-table-empty">
+    <div v-else-if="isEmpty" class="base-table-empty">
       <slot name="empty">
         <BaseIcon icon="file-text" :size="60" class="base-table-empty-icon" />
         <div class="base-table-empty-content">
@@ -54,78 +18,109 @@
         </div>
       </slot>
     </div>
+
+    <!-- Таблица -->
+    <table v-else :class="tableClasses">
+      <thead class="base-table-header-row">
+        <tr class="base-table-row base-table-row--header">
+          <th
+            v-for="header in headers"
+            :key="header.accessorKey"
+            class="base-table-cell base-table-cell--header"
+            :style="{ width: header.width }"
+          >
+            <div class="base-table-header-content">
+              {{ header.name }}
+            </div>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody class="base-table-body">
+        <tr
+          v-for="(row, rowIndex) in data"
+          :key="`row-${rowIndex}`"
+          class="base-table-row base-table-row--body"
+          :class="getRowClasses(row, rowIndex)"
+          @click="handleRowClick(row, rowIndex, $event)"
+        >
+          <td
+            v-for="header in headers"
+            :key="`cell-${rowIndex}-${header.accessorKey}`"
+            class="base-table-cell base-table-cell--body"
+          >
+            <!-- Слот для кастомизации содержимого ячейки -->
+            <slot
+              :name="`cell-${header.accessorKey}`"
+              :row="row"
+              :value="getCellValue(row, header.accessorKey)"
+              :row-index="rowIndex"
+            >
+              {{ getCellValue(row, header.accessorKey) }}
+            </slot>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import {
-  type ColumnDef,
-  type SortDirection,
-  type Row,
-  type Column,
-  FlexRender,
-  getCoreRowModel,
-  useVueTable,
-} from '@tanstack/vue-table'
-import BaseIcon, { type IconName } from './BaseIcon.vue'
+import { computed } from 'vue'
+import BaseIcon from './BaseIcon.vue'
 
-export interface BaseTableProps<Data> {
+export interface BaseTableHeader {
+  /** Ключ для доступа к данным */
+  accessorKey: string
+  /** Отображаемое имя колонки */
+  name: string
+  /** Ширина колонки */
+  width?: string
+}
+
+export interface BaseTableProps<TData extends Record<string, unknown> = Record<string, unknown>> {
   /** Данные таблицы */
-  data: Data[]
-  /** Конфигурация колонок */
-  headers: Header[]
-  enableActions: boolean
-  /** Общее состояние загрузки */
+  data: TData[]
+  /** Конфигурация заголовков */
+  headers: BaseTableHeader[]
+  /** Состояние загрузки */
   loading?: boolean
-
-  // Тексты
   /** Текст при загрузке */
   loadingText?: string
   /** Текст для пустого состояния */
   emptyText?: string
-
-  // Внешний вид
   /** Размер таблицы */
   size?: 'sm' | 'md' | 'lg'
   /** Растянуть на всю ширину */
   fullWidth?: boolean
-  /** Выделяемые строки */
+  /** Выделяемые строки при наведении */
   hoverable?: boolean
   /** Дополнительные классы */
   class?: string
-}
-interface Header {
-  accessorKey: string
-  name: string
+  /** Функция для получения уникального ключа строки */
+  rowKey?: string | ((row: TData, index: number) => string | number)
 }
 
-const props = withDefaults(defineProps<BaseTableProps<any>>(), {
+const props = withDefaults(defineProps<BaseTableProps>(), {
   loading: false,
-  enableActions: true,
   loadingText: 'Загрузка...',
   emptyText: 'Нет данных для отображения',
   size: 'md',
   fullWidth: true,
   hoverable: true,
+  rowKey: undefined,
 })
 
-const emit = defineEmits<{
-  // События строк
-  'row-click': [row: Row<Data>, event: MouseEvent]
-}>()
-
-const prepareRows = (data) => {
-  return data
+export interface BaseTableEmits<TData extends Record<string, unknown> = Record<string, unknown>> {
+  /** Клик по строке */
+  'row-click': [row: TData, rowIndex: number, event: MouseEvent]
 }
 
-// Настройка  Table
-const table = {
-  rows: prepareRows(props.data),
-  headers: props.headers,
-}
+const emit = defineEmits<BaseTableEmits>()
 
-// Классы
+// Вычисляемые свойства
+const isEmpty = computed(() => !props.loading && props.data.length === 0)
+
 const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
   'base-table-container',
@@ -138,9 +133,26 @@ const tableContainerClasses = computed(() => [
 
 const tableClasses = computed(() => ['base-table', `base-table--${props.size}`])
 
-// Получение классов для строки
-const getRowClasses = (row: Row<TData>) => {
-  const classes = []
+// Методы
+const getRowKey = (row: Record<string, unknown>, index: number): string | number => {
+  if (props.rowKey === undefined) {
+    return index
+  }
+
+  if (typeof props.rowKey === 'string') {
+    const value = row[props.rowKey]
+    return value != null ? String(value) : index
+  }
+
+  return props.rowKey(row, index)
+}
+
+const getCellValue = (row: Record<string, unknown>, accessorKey: string): unknown => {
+  return row[accessorKey] ?? ''
+}
+
+const getRowClasses = (row: Record<string, unknown>, rowIndex: number) => {
+  const classes: string[] = []
 
   if (props.hoverable) {
     classes.push('base-table-row--hoverable')
@@ -149,9 +161,12 @@ const getRowClasses = (row: Row<TData>) => {
   return classes
 }
 
-const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
-  const mouseEvent = event || new MouseEvent('click')
-  emit('row-click', row, mouseEvent)
+const handleRowClick = (
+  row: Record<string, unknown>,
+  rowIndex: number,
+  event: MouseEvent,
+): void => {
+  emit('row-click', row, rowIndex, event)
 }
 </script>
 

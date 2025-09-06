@@ -1,333 +1,323 @@
 <template>
-  <div class="base-table-wrapper">
+  <div :class="tableContainerClasses">
+    <!-- Пустое состояние -->
+    <div v-if="isEmpty" class="base-table-empty">
+      <slot name="empty">
+        <BaseIcon icon="file-text" :size="60" class="base-table-empty-icon" />
+        <div class="base-table-empty-content">
+          <span class="base-table-empty-title">
+            {{ emptyText }}
+          </span>
+          <span class="base-table-empty-subtitle"> Попробуйте изменить поисковый запрос </span>
+        </div>
+      </slot>
+    </div>
+
     <!-- Таблица -->
-    <div class="base-table-container" :class="tableContainerClasses">
-      <table class="base-table" :class="tableClasses">
-        <thead class="base-table-header-row">
-          <tr
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-            class="base-table-row base-table-row--header"
+    <table v-else :class="tableClasses">
+      <thead class="base-table-header-row">
+        <tr class="base-table-row base-table-row--header">
+          <th
+            v-for="header in headers"
+            :key="header.accessorKey"
+            class="base-table-cell base-table-cell--header"
+            :style="{ width: header.width }"
           >
-            <th
-              v-for="header in headerGroup.headers"
-              :key="header.id"
-              class="base-table-cell base-table-cell--header"
-            >
-              <div v-if="!header.isPlaceholder" class="base-table-header-wrapper">
-                <!-- Основной заголовок с сортировкой -->
-                <div
-                  class="base-table-header-content"
-                  :class="{
-                    'base-table-header-content--sortable': header.column.getCanSort() && sortable,
-                    'base-table-header-content--sorting':
-                      sortLoading && currentSortColumn === header.column.id,
-                  }"
-                  @click="handleSort(header.column)"
+            <div class="base-table-header-content">
+              <span class="base-table-header-title">{{ header.name }}</span>
+
+              <div class="base-table-header-actions">
+                <!-- Иконка сортировки -->
+                <button
+                  v-if="header.sortable !== false"
+                  type="button"
+                  class="base-table-header-sort-btn"
+                  @click="handleSort(header.accessorKey)"
                 >
-                  <div>
-                    <FlexRender
-                      :render="header.column.columnDef.header"
-                      :props="header.getContext()"
-                    />
-                    <!-- Индикатор сортировки -->
-                    <template v-if="sortable && header.column.getCanSort()">
-                      <BaseIcon
-                        v-if="sortLoading && currentSortColumn === header.column.id"
-                        icon="refresh-cw"
-                        :size="14"
-                        class="base-table-sort-loading"
-                      />
-                      <BaseIcon
-                        v-else
-                        :icon="getSortIcon(header.column.getIsSorted())"
-                        :size="14"
-                        class="base-table-sort-icon"
-                      />
-                    </template>
-                  </div>
-                  <!-- Фильтр колонки -->
-                  <div
-                    v-if="filterable && header.column.columnDef.enableColumnFilter !== false"
-                    class="base-table-column-filter"
+                  <BaseIcon
+                    :icon="getSortIcon(getCurrentSort(header.accessorKey))"
+                    :size="16"
+                    class="base-table-header-sort-icon"
+                    :class="getSortIconClass(getCurrentSort(header.accessorKey))"
+                  />
+                </button>
+
+                <!-- Иконка фильтра -->
+                <div v-if="header.filterable !== false" class="base-table-header-filter">
+                  <button
+                    type="button"
+                    class="base-table-header-filter-btn"
+                    :class="{
+                      'base-table-header-filter-btn--active': getFilterValue(header.accessorKey),
+                    }"
+                    @click="toggleFilter(header.accessorKey, $event)"
                   >
-                    <slot
-                      :name="`filter-${header.column.id}`"
-                      :column="header.column"
-                      :filter-value="getColumnFilterValue(header.column.id)"
-                      :on-filter="(value) => handleColumnFilter(header.column.id, value)"
-                    >
-                      <!-- Дефолтный фильтр -->
-                      <component
-                        :is="getFilterComponent(header.column)"
-                        :model-value="getColumnFilterValue(header.column.id)"
-                        :column="header.column"
-                        :options="getFilterOptions(header.column)"
-                        :loading="filterLoading && currentFilterColumn === header.column.id"
-                        @update:model-value="(value) => handleColumnFilter(header.column.id, value)"
-                      />
-                    </slot>
+                    <BaseIcon icon="filter" :size="16" class="base-table-header-filter-icon" />
+                  </button>
+
+                  <!-- Меню фильтра -->
+                  <div
+                    v-if="activeFilter === header.accessorKey"
+                    class="base-table-filter-menu"
+                    @click.stop
+                  >
+                    <div class="base-table-filter-content">
+                      <!-- Фильтр по тексту -->
+                      <div
+                        v-if="!header.type || header.type === 'text'"
+                        class="base-table-filter-group"
+                      >
+                        <label class="base-table-filter-label">Поиск по тексту:</label>
+                        <input
+                          v-model="filterValues[header.accessorKey]"
+                          type="text"
+                          class="base-table-filter-input"
+                          placeholder="Введите текст для поиска"
+                          @input="handleFilterChange(header.accessorKey, $event)"
+                        />
+                      </div>
+
+                      <!-- Фильтр по числу -->
+                      <div v-else-if="header.type === 'number'" class="base-table-filter-group">
+                        <label class="base-table-filter-label">Минимальное значение:</label>
+                        <input
+                          :value="getNumberFilterValue(header.accessorKey, 'min')"
+                          type="number"
+                          class="base-table-filter-input"
+                          placeholder="Минимум"
+                          @input="handleNumberFilterChange(header.accessorKey, 'min', $event)"
+                        />
+                        <label class="base-table-filter-label">Максимальное значение:</label>
+                        <input
+                          :value="getNumberFilterValue(header.accessorKey, 'max')"
+                          type="number"
+                          class="base-table-filter-input"
+                          placeholder="Максимум"
+                          @input="handleNumberFilterChange(header.accessorKey, 'max', $event)"
+                        />
+                      </div>
+
+                      <!-- Фильтр по дате -->
+                      <div v-else-if="header.type === 'date'" class="base-table-filter-group">
+                        <label class="base-table-filter-label">С даты:</label>
+                        <input
+                          :value="getDateFilterValue(header.accessorKey, 'from')"
+                          type="date"
+                          class="base-table-filter-input"
+                          @change="handleDateFilterChange(header.accessorKey, 'from', $event)"
+                        />
+                        <label class="base-table-filter-label">По дату:</label>
+                        <input
+                          :value="getDateFilterValue(header.accessorKey, 'to')"
+                          type="date"
+                          class="base-table-filter-input"
+                          @change="handleDateFilterChange(header.accessorKey, 'to', $event)"
+                        />
+                      </div>
+
+                      <!-- Фильтр по булеву значению -->
+                      <div v-else-if="header.type === 'boolean'" class="base-table-filter-group">
+                        <label class="base-table-filter-label base-table-filter-checkbox-label">
+                          <input
+                            :checked="getBooleanFilterValue(header.accessorKey)"
+                            type="checkbox"
+                            class="base-table-filter-checkbox"
+                            @change="handleBooleanFilterChange(header.accessorKey, $event)"
+                          />
+                          <span class="base-table-filter-checkbox-text">Только отмеченные</span>
+                        </label>
+                      </div>
+
+                      <!-- Кнопки управления -->
+                      <div class="base-table-filter-actions">
+                        <button
+                          type="button"
+                          class="base-table-filter-clear-btn"
+                          @click="clearFilter(header.accessorKey)"
+                        >
+                          Очистить
+                        </button>
+                        <button
+                          type="button"
+                          class="base-table-filter-close-btn"
+                          @click="closeFilter"
+                        >
+                          Закрыть
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </th>
-          </tr>
-        </thead>
+            </div>
+          </th>
+        </tr>
+      </thead>
 
-        <tbody class="base-table-body">
-          <template v-if="!loading && table.getRowModel().rows.length">
-            <tr
-              v-for="row in table.getRowModel().rows"
-              :key="row.id"
-              class="base-table-row base-table-row--body"
-              :class="getRowClasses(row)"
-              @click="handleRowClick(row)"
-            >
-              <td
-                v-for="cell in row.getVisibleCells()"
-                :key="cell.id"
-                class="base-table-cell base-table-cell--body"
-                :class="getCellClasses(cell.column)"
-              >
-                <!-- Слот для кастомизации содержимого ячейки -->
-                <slot
-                  :name="`cell-${cell.column.id}`"
-                  :cell="cell"
-                  :row="row"
-                  :value="cell.getValue()"
-                >
-                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                </slot>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-
-      <!-- Состояние загрузки -->
-      <div v-if="loading" class="base-table-loading">
-        <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
-        <span>{{ loadingText }}</span>
-      </div>
-
-      <!-- Пустое состояние -->
-      <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
-        <slot name="empty" :search-value="searchValue">
-          <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
-          <div class="base-table-empty-content">
-            <span class="base-table-empty-title">
-              {{ searchValue ? 'Ничего не найдено' : emptyText }}
-            </span>
-            <span v-if="searchValue" class="base-table-empty-subtitle">
-              Попробуйте изменить поисковый запрос
-            </span>
+      <tbody class="base-table-body">
+        <!-- Оверлей загрузки -->
+        <div v-if="loading" class="base-table-loading-overlay">
+          <div class="base-table-loading">
+            <BaseIcon icon="refresh-cw" :size="24" class="base-table-loading-icon" />
+            <span class="base-table-loading-text">{{ loadingText }}</span>
           </div>
-        </slot>
-      </div>
-    </div>
+        </div>
+        <tr
+          v-for="(row, rowIndex) in sortedData"
+          :key="`row-${rowIndex}`"
+          class="base-table-row base-table-row--body"
+          :class="getRowClasses(row, rowIndex)"
+          @click="handleRowClick(row, rowIndex, $event)"
+        >
+          <td
+            v-for="header in headers"
+            :key="`cell-${rowIndex}-${header.accessorKey}`"
+            class="base-table-cell base-table-cell--body"
+          >
+            <!-- Слот для кастомизации содержимого ячейки -->
+            <slot
+              :name="`cell-${header.accessorKey}`"
+              :row="row"
+              :value="getCellValue(row, header.accessorKey)"
+              :row-index="rowIndex"
+            >
+              {{ getCellValue(row, header.accessorKey) }}
+            </slot>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Оверлей для закрытия фильтра -->
+    <div v-if="activeFilter" class="base-table-filter-overlay" @click="closeFilter"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
-import {
-  type ColumnDef,
-  type SortDirection,
-  type Row,
-  type Column,
-  FlexRender,
-  getCoreRowModel,
-  useVueTable,
-} from '@tanstack/vue-table'
-import BaseIcon, { type IconName } from './BaseIcon.vue'
-import BaseInput from './BaseInput.vue'
-import BaseButton from './BaseButton.vue'
-import BaseSelect from './BaseSelect.vue'
-// import BaseDatePicker from './BaseDatePicker.vue'
-// import BaseNumberInput from './BaseNumberInput.vue'
+import { computed, ref, reactive, onMounted, onUnmounted, watch } from 'vue'
+import BaseIcon from './BaseIcon.vue'
 
-// Типы фильтров
-export type FilterType =
-  | 'text'
-  | 'select'
-  | 'multiselect'
-  | 'date'
-  | 'dateRange'
-  | 'number'
-  | 'numberRange'
-  | 'boolean'
-
-export interface ColumnFilterConfig {
-  type?: FilterType
-  options?: Array<{ label: string; value: any }>
-  placeholder?: string
-  multiple?: boolean
+export interface BaseTableHeader {
+  /** Ключ для доступа к данным */
+  accessorKey: string
+  /** Отображаемое имя колонки */
+  name: string
+  /** Ширина колонки */
+  width?: string
+  /** Тип данных в колонке */
+  type?: 'text' | 'number' | 'date' | 'boolean'
+  /** Состояние сортировки */
+  sort?: 'asc' | 'desc' | null
+  /** Можно ли сортировать колонку */
+  sortable?: boolean
+  /** Можно ли фильтровать колонку */
+  filterable?: boolean
 }
 
-export interface BaseTableProps<TData> {
+export interface BaseTableProps<TData extends Record<string, unknown> = Record<string, unknown>> {
   /** Данные таблицы */
   data: TData[]
-  /** Конфигурация колонок */
-  columns: ColumnDef<TData, any>[]
-  /** Заголовок таблицы */
-  title?: string
-
-  // Поиск
-  /** Включить поиск */
-  searchable?: boolean
-  /** Placeholder для поиска */
-  searchPlaceholder?: string
-  /** Значение поиска (для внешнего управления) */
-  searchValue?: string
-  /** Задержка поиска в мс */
-  searchDebounce?: number
-
-  // Фильтрация
-  /** Включить фильтрацию колонок */
-  filterable?: boolean
-  /** Значения фильтров колонок */
-  columnFilters?: Record<string, any>
-
-  // Пагинация
-  /** Показать пагинацию */
-  showPagination?: boolean
-  /** Текущая страница */
-  currentPage?: number
-  /** Размер страницы */
-  pageSize?: number
-  /** Общее количество элементов */
-  totalItems?: number
-  /** Количество отфильтрованных элементов */
-  filteredItems?: number
-  /** Показать селектор размера страницы */
-  showPageSizeSelector?: boolean
-  /** Опции размера страницы */
-  pageSizeOptions?: number[]
-
-  // Сортировка
-  /** Включить сортировку */
-  sortable?: boolean
-  /** Текущая сортировка */
-  sortBy?: string
-  /** Направление сортировки */
-  sortDirection?: SortDirection
-
-  // Состояния загрузки
-  /** Общее состояние загрузки */
+  /** Конфигурация заголовков */
+  headers: BaseTableHeader[]
+  /** Состояние загрузки */
   loading?: boolean
-  /** Загрузка поиска */
-  searchLoading?: boolean
-  /** Загрузка сортировки */
-  sortLoading?: boolean
-  /** Загрузка фильтрации */
-  filterLoading?: boolean
-  /** Загрузка пагинации */
-  paginationLoading?: boolean
-
-  // Тексты
   /** Текст при загрузке */
   loadingText?: string
   /** Текст для пустого состояния */
   emptyText?: string
-
-  // Внешний вид
   /** Размер таблицы */
   size?: 'sm' | 'md' | 'lg'
   /** Растянуть на всю ширину */
   fullWidth?: boolean
-  /** Выделяемые строки */
+  /** Выделяемые строки при наведении */
   hoverable?: boolean
-  /** Показать информацию о результатах */
-  showResultsInfo?: boolean
   /** Дополнительные классы */
   class?: string
-
-  // Поведение
-  /** Включить выбор строк */
-  selectable?: boolean
-  /** Множественный выбор */
-  multiSelect?: boolean
-  /** Выбранные строки */
-  selectedRows?: TData[]
+  /** Функция для получения уникального ключа строки */
+  rowKey?: string | ((row: TData, index: number) => string | number)
 }
 
-const props = withDefaults(defineProps<BaseTableProps<any>>(), {
-  searchPlaceholder: 'Поиск...',
-  searchDebounce: 300,
-  filterable: true,
-  columnFilters: () => ({}),
-  showPagination: true,
-  currentPage: 1,
-  pageSize: 10,
-  totalItems: 0,
-  showPageSizeSelector: true,
-  pageSizeOptions: () => [10, 25, 50, 100],
-  sortable: true,
+const props = withDefaults(defineProps<BaseTableProps>(), {
   loading: false,
-  searchLoading: false,
-  sortLoading: false,
-  filterLoading: false,
-  paginationLoading: false,
   loadingText: 'Загрузка...',
   emptyText: 'Нет данных для отображения',
   size: 'md',
   fullWidth: true,
   hoverable: true,
-  showResultsInfo: true,
-  selectable: false,
-  multiSelect: false,
-  selectedRows: () => [],
+  rowKey: undefined,
 })
 
-const emit = defineEmits<{
-  // События поиска
-  search: [query: string]
-  'search-clear': []
+export interface BaseTableEmits<TData extends Record<string, unknown> = Record<string, unknown>> {
+  /** Клик по строке */
+  'row-click': [row: TData, rowIndex: number, event: MouseEvent]
+  /** Изменение сортировки */
+  'sort-change': [accessorKey: string, direction: 'asc' | 'desc' | null]
+  /** Изменение фильтра */
+  'filter-change': [accessorKey: string, value: any]
+}
 
-  // События фильтрации
-  'column-filter': [column: string, value: any]
-  'filter-clear': [column: string]
-  'filters-clear': []
+const emit = defineEmits<BaseTableEmits>()
 
-  // События пагинации
-  'page-change': [page: number]
-  'page-size-change': [size: number]
-
-  // События сортировки
-  'sort-change': [column: string, direction: SortDirection | false]
-
-  // События строк
-  'row-click': [row: Row<TData>, event: MouseEvent]
-  'row-select': [row: TData, selected: boolean]
-  'selection-change': [selectedRows: TData[]]
-}>()
-
-// Реактивные переменные
-const searchValue = ref(props.searchValue || '')
-const currentSortColumn = ref<string | null>(null)
-const currentFilterColumn = ref<string | null>(null)
-const searchDebounceTimer = ref<NodeJS.Timeout | null>(null)
-const filterDebounceTimers = ref<Record<string, NodeJS.Timeout>>({})
-
-// Настройка TanStack Table
-const table = useVueTable({
-  get data() {
-    return props.data
-  },
-  get columns() {
-    return props.columns
-  },
-  getCoreRowModel: getCoreRowModel(),
-  manualPagination: true,
-  manualSorting: true,
-  manualFiltering: true,
-})
+// Реактивные данные
+const activeFilter = ref<string | null>(null)
+const filterValues = reactive<Record<string, any>>({})
+const sortState = reactive<Record<string, 'asc' | 'desc' | null>>({})
 
 // Вычисляемые свойства
-const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize))
+const isEmpty = computed(() => !props.loading && props.data.length === 0)
+
+// Отсортированные данные
+const sortedData = computed(() => {
+  let result = [...props.data]
+
+  // Применяем сортировку
+  const activeSortKey = Object.keys(sortState).find((key) => sortState[key])
+  if (activeSortKey && sortState[activeSortKey]) {
+    const direction = sortState[activeSortKey]
+    result.sort((a, b) => {
+      const aValue = a[activeSortKey]
+      const bValue = b[activeSortKey]
+
+      // Обработка null/undefined значений
+      if (aValue == null && bValue == null) return 0
+      if (aValue == null) return direction === 'asc' ? -1 : 1
+      if (bValue == null) return direction === 'asc' ? 1 : -1
+
+      // Определяем тип данных для правильной сортировки
+      const header = props.headers.find((h) => h.accessorKey === activeSortKey)
+
+      if (header?.type === 'number') {
+        const numA = Number(aValue)
+        const numB = Number(bValue)
+        return direction === 'asc' ? numA - numB : numB - numA
+      }
+
+      if (header?.type === 'date') {
+        const dateA = new Date(aValue as string)
+        const dateB = new Date(bValue as string)
+        return direction === 'asc'
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime()
+      }
+
+      // Строковая сортировка
+      const strA = String(aValue).toLowerCase()
+      const strB = String(bValue).toLowerCase()
+
+      if (direction === 'asc') {
+        return strA < strB ? -1 : strA > strB ? 1 : 0
+      } else {
+        return strA > strB ? -1 : strA < strB ? 1 : 0
+      }
+    })
+  }
+
+  return result
+})
 
 const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
+  'base-table-container',
   {
     'base-table--loading': props.loading,
     'base-table--full-width': props.fullWidth,
@@ -335,78 +325,28 @@ const tableContainerClasses = computed(() => [
   props.class,
 ])
 
-const tableClasses = computed(() => [`base-table--${props.size}`])
+const tableClasses = computed(() => ['base-table', `base-table--${props.size}`])
 
-// Методы для работы с фильтрами
-const getColumnFilterValue = (columnId: string) => {
-  return props.columnFilters[columnId] || null
-}
-
-const getFilterComponent = (column: Column<any>) => {
-  const filterConfig = column.columnDef.meta?.filter as ColumnFilterConfig
-  const filterType = filterConfig?.type || 'text'
-
-  switch (filterType) {
-    case 'select':
-    case 'multiselect':
-      return BaseSelect
-    case 'date':
-    case 'dateRange':
-      return BaseSelect
-    case 'number':
-    case 'numberRange':
-      return BaseSelect
-    case 'boolean':
-      return BaseSelect
-    default:
-      return BaseInput
-  }
-}
-
-const getFilterOptions = (column: Column<any>) => {
-  const filterConfig = column.columnDef.meta?.filter as ColumnFilterConfig
-
-  if (filterConfig?.type === 'boolean') {
-    return [
-      { label: 'Все', value: null },
-      { label: 'Да', value: true },
-      { label: 'Нет', value: false },
-    ]
+// Методы
+const getRowKey = (row: Record<string, unknown>, index: number): string | number => {
+  if (props.rowKey === undefined) {
+    return index
   }
 
-  return filterConfig?.options || []
-}
-
-// Получение иконки сортировки
-const getSortIcon = (sortDirection: false | SortDirection): IconName => {
-  console.log(sortDirection)
-  if (sortDirection === 'asc') return 'trending-up'
-  if (sortDirection === 'desc') return 'trending-down'
-  return 'arrow-up-down'
-}
-
-// Получение классов для ячейки
-const getCellClasses = (column: any) => {
-  const classes = []
-
-  if (column.columnDef.align) {
-    classes.push(`base-table-cell--align-${column.columnDef.align}`)
+  if (typeof props.rowKey === 'string') {
+    const value = row[props.rowKey]
+    return value != null ? String(value) : index
   }
 
-  if (column.columnDef.className) {
-    classes.push(column.columnDef.className)
-  }
-
-  return classes
+  return props.rowKey(row, index)
 }
 
-// Получение классов для строки
-const getRowClasses = (row: Row<TData>) => {
-  const classes = []
+const getCellValue = (row: Record<string, unknown>, accessorKey: string): unknown => {
+  return row[accessorKey] ?? ''
+}
 
-  if (row.getIsSelected()) {
-    classes.push('base-table-row--selected')
-  }
+const getRowClasses = (row: Record<string, unknown>, rowIndex: number) => {
+  const classes: string[] = []
 
   if (props.hoverable) {
     classes.push('base-table-row--hoverable')
@@ -415,125 +355,190 @@ const getRowClasses = (row: Row<TData>) => {
   return classes
 }
 
-const handleColumnFilter = (columnId: string, value: any) => {
-  currentFilterColumn.value = columnId
-
-  // Очищаем предыдущий таймер для этой колонки
-  if (filterDebounceTimers.value[columnId]) {
-    clearTimeout(filterDebounceTimers.value[columnId])
-  }
-
-  // Устанавливаем новый таймер
-  filterDebounceTimers.value[columnId] = setTimeout(() => {
-    emit('column-filter', columnId, value)
-    currentFilterColumn.value = null
-  }, props.searchDebounce)
+const handleRowClick = (
+  row: Record<string, unknown>,
+  rowIndex: number,
+  event: MouseEvent,
+): void => {
+  emit('row-click', row, rowIndex, event)
 }
 
-const handleSort = (column: Column<TData>) => {
-  if (!props.sortable || !column.getCanSort()) return
+// Методы сортировки
+const getCurrentSort = (accessorKey: string): 'asc' | 'desc' | null => {
+  return sortState[accessorKey] || null
+}
 
-  currentSortColumn.value = column.id
-  const currentSort = column.getIsSorted()
+const getSortIcon = (sort?: 'asc' | 'desc' | null): string => {
+  if (sort === 'asc') return 'chevron-up'
+  if (sort === 'desc') return 'chevron-down'
+  return 'chevrons-up-down'
+}
 
-  let newDirection: SortDirection | false
-  if (currentSort === false) {
-    newDirection = 'asc'
-  } else if (currentSort === 'asc') {
-    newDirection = 'desc'
+const getSortIconClass = (sort?: 'asc' | 'desc' | null): string => {
+  return sort ? 'base-table-header-sort-icon--active' : ''
+}
+
+const handleSort = (accessorKey: string): void => {
+  const currentSort = sortState[accessorKey] || null
+  let newSort: 'asc' | 'desc' | null = 'asc'
+
+  if (currentSort === 'asc') {
+    newSort = 'desc'
+  } else if (currentSort === 'desc') {
+    newSort = null
+  }
+
+  // Сбрасываем все сортировки
+  Object.keys(sortState).forEach((key) => {
+    sortState[key] = null
+  })
+
+  // Устанавливаем новую сортировку
+  if (newSort) {
+    sortState[accessorKey] = newSort
+  }
+
+  emit('sort-change', accessorKey, newSort)
+}
+
+// Методы фильтрации
+const toggleFilter = (accessorKey: string, event: Event): void => {
+  event.stopPropagation()
+
+  if (activeFilter.value === accessorKey) {
+    closeFilter()
   } else {
-    newDirection = false
-  }
+    activeFilter.value = accessorKey
 
-  emit('sort-change', column.id, newDirection)
-}
-
-const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
-  const mouseEvent = event || new MouseEvent('click')
-  emit('row-click', row, mouseEvent)
-}
-
-const handlePageChange = (page: number) => {
-  if (page !== props.currentPage) {
-    emit('page-change', page)
-  }
-}
-
-const handlePageSizeChange = (event: Event) => {
-  const target = event.target as HTMLSelectElement
-  const newSize = parseInt(target.value)
-  emit('page-size-change', newSize)
-}
-
-// Следим за внешними изменениями поиска
-watch(
-  () => props.searchValue,
-  (newValue) => {
-    if (newValue !== searchValue.value) {
-      searchValue.value = newValue || ''
+    // Инициализируем значение фильтра если его нет
+    if (!(accessorKey in filterValues)) {
+      const header = props.headers.find((h) => h.accessorKey === accessorKey)
+      if (header?.type === 'number') {
+        filterValues[accessorKey] = { min: '', max: '' }
+      } else if (header?.type === 'date') {
+        filterValues[accessorKey] = { from: '', to: '' }
+      } else if (header?.type === 'boolean') {
+        filterValues[accessorKey] = false
+      } else {
+        filterValues[accessorKey] = ''
+      }
     }
+  }
+}
+
+const closeFilter = (): void => {
+  activeFilter.value = null
+}
+
+const getFilterValue = (accessorKey: string): any => {
+  const value = filterValues[accessorKey]
+  if (typeof value === 'object' && value !== null) {
+    return Object.values(value).some((v) => v !== '' && v !== null && v !== undefined)
+  }
+  return value
+}
+
+const getNumberFilterValue = (accessorKey: string, type: 'min' | 'max'): string => {
+  return filterValues[accessorKey]?.[type] || ''
+}
+
+const getDateFilterValue = (accessorKey: string, type: 'from' | 'to'): string => {
+  return filterValues[accessorKey]?.[type] || ''
+}
+
+const getBooleanFilterValue = (accessorKey: string): boolean => {
+  return filterValues[accessorKey] || false
+}
+
+const clearFilter = (accessorKey: string): void => {
+  const header = props.headers.find((h) => h.accessorKey === accessorKey)
+
+  if (header?.type === 'number') {
+    filterValues[accessorKey] = { min: '', max: '' }
+  } else if (header?.type === 'date') {
+    filterValues[accessorKey] = { from: '', to: '' }
+  } else if (header?.type === 'boolean') {
+    filterValues[accessorKey] = false
+  } else {
+    filterValues[accessorKey] = ''
+  }
+
+  emit('filter-change', accessorKey, filterValues[accessorKey])
+}
+
+const handleFilterChange = (accessorKey: string, event: Event): void => {
+  const target = event.target as HTMLInputElement
+  filterValues[accessorKey] = target.value
+  emit('filter-change', accessorKey, target.value)
+}
+
+const handleNumberFilterChange = (accessorKey: string, type: 'min' | 'max', event: Event): void => {
+  const target = event.target as HTMLInputElement
+  const value = target.value
+
+  if (!filterValues[accessorKey]) {
+    filterValues[accessorKey] = { min: '', max: '' }
+  }
+
+  filterValues[accessorKey][type] = value
+  emit('filter-change', accessorKey, filterValues[accessorKey])
+}
+
+const handleDateFilterChange = (accessorKey: string, type: 'from' | 'to', event: Event): void => {
+  const target = event.target as HTMLInputElement
+
+  if (!filterValues[accessorKey]) {
+    filterValues[accessorKey] = { from: '', to: '' }
+  }
+
+  filterValues[accessorKey][type] = target.value
+  emit('filter-change', accessorKey, filterValues[accessorKey])
+}
+
+const handleBooleanFilterChange = (accessorKey: string, event: Event): void => {
+  const target = event.target as HTMLInputElement
+  filterValues[accessorKey] = target.checked
+  emit('filter-change', accessorKey, target.checked)
+}
+
+// Обработка клика вне фильтра
+const handleClickOutside = (event: Event): void => {
+  const target = event.target as Element
+  if (
+    !target.closest('.base-table-filter-menu') &&
+    !target.closest('.base-table-header-filter-btn')
+  ) {
+    closeFilter()
+  }
+}
+
+// Синхронизация с внешним состоянием сортировки
+watch(
+  () => props.headers,
+  (newHeaders) => {
+    // Очищаем старое состояние
+    Object.keys(sortState).forEach((key) => {
+      delete sortState[key]
+    })
+
+    // Инициализируем новое состояние
+    newHeaders.forEach((header) => {
+      sortState[header.accessorKey] = header.sort || null
+    })
   },
+  { immediate: true, deep: true },
 )
 
-// Очистка таймеров при размонтировании
 onMounted(() => {
-  return () => {
-    if (searchDebounceTimer.value) {
-      clearTimeout(searchDebounceTimer.value)
-    }
-    Object.values(filterDebounceTimers.value).forEach((timer) => {
-      if (timer) clearTimeout(timer)
-    })
-  }
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
 <style scoped>
-.base-table-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-lg);
-  width: 100%;
-}
-
-.base-table-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-spacing-lg);
-  flex-wrap: wrap;
-}
-
-.base-table-title-section {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-md);
-}
-
-.base-table-title {
-  font-size: var(--ds-font-size-lg);
-  font-weight: 600;
-  color: var(--ds-text-primary);
-  margin: 0;
-}
-
-.base-table-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-sm);
-}
-
-.base-table-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-md);
-  flex-wrap: wrap;
-}
-
-.base-table-search {
-  max-width: 320px;
-}
-
 .base-table-container {
   position: relative;
   border: 1px solid var(--ds-border);
@@ -570,10 +575,6 @@ onMounted(() => {
 
 .base-table-row--body.base-table-row--hoverable:hover {
   background-color: var(--ds-button-ghost-bg-hover);
-}
-
-.base-table-row--selected {
-  background-color: var(--ds-button-ghost-bg-active);
 }
 
 .base-table-cell {
@@ -614,61 +615,223 @@ onMounted(() => {
   font-size: var(--ds-font-size-md);
 }
 
-/* Выравнивание */
-.base-table-cell--align-left {
-  text-align: left;
-}
-
-.base-table-cell--align-center {
-  text-align: center;
-}
-
-.base-table-cell--align-right {
-  text-align: right;
-}
-
 /* Заголовок колонки */
-.base-table-header-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-xs);
-}
-
 .base-table-header-content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--ds-spacing-xs);
   cursor: default;
   min-height: 20px;
+  width: 100%;
 }
 
-.base-table-header-content--sortable {
-  cursor: pointer;
-  user-select: none;
+.base-table-header-title {
+  flex: 1;
+  min-width: 0;
 }
 
-.base-table-header-content--sortable:hover {
-  color: var(--ds-text-primary);
-}
-
-.base-table-sort-icon {
-  opacity: 0.5;
-  transition: opacity 0.2s ease;
+.base-table-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
   flex-shrink: 0;
 }
 
-.base-table-header-content--sortable:hover .base-table-sort-icon {
-  opacity: 1;
+/* Кнопка сортировки */
+.base-table-header-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text-tertiary);
+  transition: all 0.2s ease;
 }
 
-.base-table-sort-loading {
-  animation: spin 1s linear infinite;
+.base-table-header-sort-btn:hover {
+  background-color: var(--ds-button-ghost-bg-hover);
+  color: var(--ds-text-secondary);
+}
+
+.base-table-header-sort-icon--active {
   color: var(--ds-text-primary);
 }
 
-/* Фильтры колонок */
-.base-table-column-filter {
-  min-width: 120px;
+/* Фильтр */
+.base-table-header-filter {
+  position: relative;
+}
+
+.base-table-header-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text-tertiary);
+  transition: all 0.2s ease;
+}
+
+.base-table-header-filter-btn:hover {
+  background-color: var(--ds-button-ghost-bg-hover);
+  color: var(--ds-text-secondary);
+}
+
+.base-table-header-filter-btn--active {
+  color: var(--ds-accent-primary);
+  background-color: var(--ds-accent-bg);
+}
+
+/* Меню фильтра */
+.base-table-filter-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  min-width: 280px;
+  margin-top: 4px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.base-table-filter-content {
+  padding: var(--ds-spacing-md);
+}
+
+.base-table-filter-group {
+  margin-bottom: var(--ds-spacing-md);
+}
+
+.base-table-filter-group:last-of-type {
+  margin-bottom: var(--ds-spacing-sm);
+}
+
+.base-table-filter-label {
+  display: block;
+  margin-bottom: var(--ds-spacing-xs);
+  font-size: var(--ds-font-size-xs);
+  font-weight: 500;
+  color: var(--ds-text-secondary);
+}
+
+.base-table-filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
+  cursor: pointer;
+  padding: var(--ds-spacing-xs) 0;
+  margin-bottom: 0;
+}
+
+.base-table-filter-input {
+  width: 100%;
+  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-font-size-sm);
+  background-color: var(--ds-surface);
+  color: var(--ds-text-primary);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  margin-bottom: var(--ds-spacing-xs);
+}
+
+.base-table-filter-input:focus {
+  outline: none;
+  border-color: var(--ds-accent-primary);
+  box-shadow: 0 0 0 2px var(--ds-accent-bg);
+}
+
+.base-table-filter-input:last-child {
+  margin-bottom: 0;
+}
+
+.base-table-filter-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ds-accent-primary);
+  cursor: pointer;
+}
+
+.base-table-filter-checkbox-text {
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-text-primary);
+  user-select: none;
+}
+
+/* Действия фильтра */
+.base-table-filter-actions {
+  display: flex;
+  gap: var(--ds-spacing-xs);
+  justify-content: flex-end;
+  margin-top: var(--ds-spacing-md);
+  padding-top: var(--ds-spacing-sm);
+  border-top: 1px solid var(--ds-border);
+}
+
+.base-table-filter-clear-btn,
+.base-table-filter-close-btn {
+  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
+  border: none;
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-font-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.base-table-filter-clear-btn {
+  background-color: transparent;
+  color: var(--ds-text-secondary);
+  border: 1px solid var(--ds-border);
+}
+
+.base-table-filter-clear-btn:hover {
+  background-color: var(--ds-button-ghost-bg-hover);
+  color: var(--ds-text-primary);
+}
+
+.base-table-filter-close-btn {
+  background-color: var(--ds-accent-primary);
+  color: var(--ds-accent-contrast);
+}
+
+.base-table-filter-close-btn:hover {
+  background-color: var(--ds-accent-hover);
+}
+
+/* Оверлей загрузки */
+.base-table-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .base-table-loading-overlay {
+    background-color: rgba(0, 0, 0, 0.75);
+  }
 }
 
 /* Состояния */
@@ -677,16 +840,35 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--ds-spacing-xl);
+  padding: var(--ds-spacing-lg);
   color: var(--ds-text-secondary);
   font-size: var(--ds-font-size-sm);
-  gap: var(--ds-spacing-md);
+  gap: var(--ds-spacing-sm);
+  background-color: var(--ds-surface);
+  border-radius: var(--ds-radius-lg);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--ds-border);
 }
-
 .base-table-loading-icon {
   animation: spin 1s linear infinite;
+  color: var(--ds-accent-primary);
 }
-
+.base-table-loading-text {
+  font-weight: 500;
+  color: var(--ds-text-primary);
+}
+/* Оверлей для закрытия фильтра */
+.base-table-filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: transparent;
+}
 .base-table-empty {
   display: flex;
   flex-direction: column;
@@ -697,11 +879,9 @@ onMounted(() => {
   font-size: var(--ds-font-size-sm);
   gap: var(--ds-spacing-md);
 }
-
 .base-table-empty-icon {
   opacity: 0.5;
 }
-
 .base-table-empty-content {
   display: flex;
   flex-direction: column;
@@ -709,107 +889,13 @@ onMounted(() => {
   gap: var(--ds-spacing-xs);
   text-align: center;
 }
-
 .base-table-empty-title {
   font-weight: 500;
   color: var(--ds-text-primary);
 }
-
 .base-table-empty-subtitle {
   font-size: var(--ds-font-size-xs);
 }
-
-/* Информация о результатах и пагинация */
-.base-table-footer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-md);
-}
-
-.base-table-results-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--ds-spacing-sm);
-}
-
-.base-table-results-text {
-  font-size: var(--ds-font-size-xs);
-  color: var(--ds-text-secondary);
-}
-
-/* Пагинация */
-.base-table-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-spacing-md);
-  flex-wrap: wrap;
-  padding: var(--ds-spacing-sm) 0;
-}
-
-.base-table-pagination-info {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-lg);
-}
-
-.base-table-pagination-text {
-  font-size: var(--ds-font-size-xs);
-  color: var(--ds-text-secondary);
-  white-space: nowrap;
-}
-
-.base-table-page-size {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-sm);
-}
-
-.base-table-page-size-label {
-  font-size: var(--ds-font-size-xs);
-  color: var(--ds-text-secondary);
-  white-space: nowrap;
-}
-
-.base-table-page-size-select {
-  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-sm);
-  background-color: var(--ds-surface);
-  color: var(--ds-text-primary);
-  font-size: var(--ds-font-size-xs);
-  cursor: pointer;
-}
-
-.base-table-page-size-select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.base-table-pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-xs);
-}
-
-.base-table-pagination-pages {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-xs);
-}
-
-.base-table-pagination-ellipsis {
-  padding: 0 var(--ds-spacing-xs);
-  color: var(--ds-text-secondary);
-  font-size: var(--ds-font-size-sm);
-}
-
-.base-table-page-active {
-  background-color: var(--ds-button-primary-bg) !important;
-  color: var(--ds-button-primary-text) !important;
-}
-
 /* Анимации */
 @keyframes spin {
   from {
@@ -817,63 +903,6 @@ onMounted(() => {
   }
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .base-table-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .base-table-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .base-table-search {
-    max-width: none;
-  }
-
-  .base-table-pagination {
-    flex-direction: column;
-    gap: var(--ds-spacing-sm);
-  }
-
-  .base-table-pagination-info {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--ds-spacing-sm);
-  }
-
-  .base-table-pagination-controls {
-    justify-content: center;
-  }
-
-  .base-table-pagination-pages {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .base-table-column-filter {
-    min-width: 100px;
-  }
-}
-
-@media (max-width: 480px) {
-  .base-table-pagination-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .base-table-pagination-pages {
-    order: -1;
-    margin-bottom: var(--ds-spacing-sm);
-  }
-
-  .base-table-column-filter {
-    min-width: 80px;
   }
 }
 </style>
