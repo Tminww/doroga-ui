@@ -1,20 +1,7 @@
 <template>
   <div :class="tableContainerClasses">
-    <!-- Пустое состояние -->
-    <div v-if="isEmpty" class="base-table-empty">
-      <slot name="empty">
-        <BaseIcon icon="file-text" :size="60" class="base-table-empty-icon" />
-        <div class="base-table-empty-content">
-          <span class="base-table-empty-title">
-            {{ emptyText }}
-          </span>
-          <span class="base-table-empty-subtitle"> Попробуйте изменить поисковый запрос </span>
-        </div>
-      </slot>
-    </div>
-
     <!-- Таблица -->
-    <table v-else :class="tableClasses">
+    <table :class="tableClasses">
       <thead class="base-table-header-row">
         <tr class="base-table-row base-table-row--header">
           <th
@@ -44,6 +31,7 @@
                 <TableFilter
                   v-if="header.filterable !== false"
                   :type="header.type"
+                  :name="header.name"
                   :value="filterValues[header.accessorKey]"
                   @update:filter="updateFilter(header.accessorKey, $event)"
                 />
@@ -54,13 +42,39 @@
       </thead>
 
       <tbody class="base-table-body">
+        <!-- Пустое состояние -->
+        <tr v-if="isEmpty">
+          <th colspan="100%" class="base-table-empty">
+            <slot name="empty">
+              <BaseIcon icon="file-text" :size="60" class="base-table-empty-icon" />
+              <div class="base-table-empty-content">
+                <span class="base-table-empty-title">
+                  {{ emptyText }}
+                </span>
+                <span class="base-table-empty-subtitle">
+                  Попробуйте изменить поисковый запрос
+                </span>
+              </div>
+            </slot>
+          </th>
+        </tr>
+
         <!-- Оверлей загрузки -->
-        <div v-if="loading" class="base-table-loading-overlay">
-          <div class="base-table-loading">
-            <BaseIcon icon="refresh-cw" :size="24" class="base-table-loading-icon" />
-            <span class="base-table-loading-text">{{ loadingText }}</span>
-          </div>
-        </div>
+        <tr v-if="loading">
+          <th colspan="100%">
+            <slot name="loading">
+              <div>
+                <div class="base-table-loading-overlay">
+                  <div class="base-table-loading">
+                    <BaseIcon icon="refresh-cw" :size="24" class="base-table-loading-icon" />
+                    <span class="base-table-loading-text">{{ loadingText }}</span>
+                  </div>
+                </div>
+              </div>
+            </slot>
+          </th>
+        </tr>
+
         <tr
           v-for="(row, rowIndex) in data"
           :key="`row-${rowIndex}`"
@@ -86,9 +100,6 @@
         </tr>
       </tbody>
     </table>
-
-    <!-- Оверлей для закрытия фильтра -->
-    {{ filterValues }}
   </div>
 </template>
 
@@ -98,7 +109,6 @@ import BaseIcon, { type IconName } from './BaseIcon.vue'
 import BasePopover from './BasePopover.vue'
 import BaseButton from './BaseButton.vue'
 import TableFilter from '../widgets/TableFilter.vue'
-import { watchEffect } from 'vue'
 
 export type Sort = 'asc' | 'desc' | false
 export type Type = 'text' | 'number' | 'date' | 'boolean'
@@ -174,7 +184,6 @@ const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
   'base-table-container',
   {
-    'base-table--loading': props.loading,
     'base-table--full-width': props.fullWidth,
   },
   props.class,
@@ -251,6 +260,7 @@ const updateFilter = (accessorKey, value) => {
 <style scoped>
 .base-table-container {
   position: relative;
+
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
@@ -271,6 +281,9 @@ const updateFilter = (accessorKey, value) => {
   table-layout: auto;
 }
 
+.base-table-body {
+  position: relative;
+}
 .base-table-row {
   border-bottom: 1px solid var(--ds-border);
 }
@@ -354,18 +367,21 @@ const updateFilter = (accessorKey, value) => {
 }
 
 /* Оверлей загрузки */
+
 .base-table-loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1001;
-  background-color: rgba(255, 255, 255, 0.85);
+  /* z-index: 1001; */
+  background-color: rgba(140, 140, 140, 0.1);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 /* Состояния */
@@ -380,13 +396,11 @@ const updateFilter = (accessorKey, value) => {
   gap: var(--ds-spacing-sm);
   background-color: var(--ds-surface);
   border-radius: var(--ds-radius-lg);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--ds-shadow-md);
   border: 1px solid var(--ds-border);
 }
 .base-table-loading-icon {
-  animation: spin 1s linear infinite;
+  animation: spin 2s linear infinite;
   color: var(--ds-accent-primary);
 }
 .base-table-loading-text {
@@ -395,14 +409,9 @@ const updateFilter = (accessorKey, value) => {
 }
 
 .base-table-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   padding: var(--ds-spacing-xl);
   color: var(--ds-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  gap: var(--ds-spacing-md);
+  font-size: var(--ds-font-size-md);
 }
 .base-table-empty-icon {
   opacity: 0.5;
@@ -411,15 +420,16 @@ const updateFilter = (accessorKey, value) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--ds-spacing-xs);
+  gap: var(--ds-spacing-md);
   text-align: center;
 }
 .base-table-empty-title {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: var(--ds-font-size-xl);
   color: var(--ds-text-primary);
 }
 .base-table-empty-subtitle {
-  font-size: var(--ds-font-size-xs);
+  font-size: var(--ds-font-size-md);
 }
 /* Анимации */
 @keyframes spin {

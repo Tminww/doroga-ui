@@ -19,7 +19,6 @@ interface BasePopoverProps {
 }
 
 const props = withDefaults(defineProps<BasePopoverProps>(), {
-  title: 'Popover',
   subTitle: 'Описание',
 
   closeButtonProps: {
@@ -52,14 +51,17 @@ const props = withDefaults(defineProps<BasePopoverProps>(), {
       >
         <div class="popover-header">
           <h1 class="popover-header-title">{{ title }}</h1>
-          <div class="popover-header-actions">
-            <PopoverClose aria-label="Close" as-child>
-              <BaseButton v-bind="closeButtonProps" />
-            </PopoverClose>
-          </div>
         </div>
 
-        <slot name="content"> dededede</slot>
+        <slot name="content"> Контент</slot>
+        <div class="popover-close">
+          <PopoverClose aria-label="Close" as-child>
+            <slot name="close">
+              <BaseButton v-bind="closeButtonProps" />
+            </slot>
+          </PopoverClose>
+        </div>
+
         <PopoverArrow class="popover-arrow" />
       </PopoverContent>
     </PopoverPortal>
@@ -78,8 +80,8 @@ input {
   border: 1px solid var(--ds-border);
   box-shadow: var(--ds-popover-shadow);
   border-radius: var(--ds-radius-lg);
-  padding: 10px 15px;
-  width: 260px;
+  padding: 10px 10px;
+  /* width: 260px; */
 
   animation-duration: 400ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
@@ -107,7 +109,7 @@ input {
 }
 
 .popover-header {
-  margin-bottom: var(--ds-spacing-sm);
+  /* margin-bottom: var(--ds-spacing-sm); */
   display: flex;
   width: 100%;
   align-items: center;
@@ -115,8 +117,15 @@ input {
 }
 .popover-header-title {
   color: var(--ds-text-primary);
-  font-size: var(--ds-font-size-md);
+  font-size: var(--ds-font-size-sm);
   font-weight: 600;
+}
+
+.popover-close {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-spacing-xs);
+  margin-top: var(--ds-spacing-sm);
 }
 @keyframes slide-up-and-fade {
   from {

@@ -5,7 +5,7 @@
       <span v-if="required" class="base-input-required">*</span>
     </label>
 
-    <BaseTooltip :content="tooltipContent" :side="tooltipSide">
+    <BaseTooltip :content="tooltip" :side="tooltipSide">
       <div class="base-input-container">
         <BaseIcon
           v-if="leftIcon"
@@ -139,11 +139,6 @@ const handleClear = () => {
   emit('update:modelValue', '')
   inputRef.value?.focus()
 }
-
-// Tooltip content для продакшена
-const tooltipContent = computed(() => {
-  return props.tooltip || `${props.label || 'Поле ввода'} (${props.type})`
-})
 </script>
 
 <style scoped>
