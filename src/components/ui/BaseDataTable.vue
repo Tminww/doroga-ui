@@ -1,49 +1,40 @@
 <template>
-  <!-- Таблица -->
-  <div class="base-table-container" :class="tableContainerClasses">
-    <table class="base-table" :class="tableClasses">
+  <div :class="tableContainerClasses">
+    <!-- Таблица -->
+    <table :class="tableClasses">
       <thead class="base-table-header-row">
-        <tr
-          v-for="headerGroup in table.getHeaderGroups()"
-          :key="headerGroup.id"
-          class="base-table-row base-table-row--header"
-        >
+        <tr class="base-table-row base-table-row--header">
           <th
-            v-for="header in headerGroup.headers"
-            :key="header.id"
+            v-for="header in headers"
+            :key="header.accessorKey"
             class="base-table-cell base-table-cell--header"
-            :class="getCellClasses(header.column)"
-            :style="getColumnStyle(header)"
+            :style="{ width: header.width }"
           >
-            <div
-              v-if="!header.isPlaceholder"
-              class="base-table-header-content"
-              :class="{
-                'base-table-header-content--sortable': header.column.getCanSort() && sortable,
-                'base-table-header-content--sorting':
-                  sortLoading && currentSortColumn === header.column.id,
-              }"
-              @click="handleSort(header.column)"
-            >
-              <div>
-                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+            <div class="base-table-header-content">
+              <div class="base-table-header-wrapper">
+                <div class="base-table-header-title">{{ header.name }}</div>
+                <!-- Иконка сортировки -->
+                <BaseButton
+                  v-if="header.sortable !== false"
+                  @click="handleSort(header.accessorKey)"
+                  icon-only
+                  :icon-size="16"
+                  variant="ghost"
+                  size="sm"
+                  :left-icon="getSortIcon(getCurrentSort(header.accessorKey))"
+                  :class="getSortIconClass(getCurrentSort(header.accessorKey))"
+                />
+              </div>
 
-                <!-- Индикатор сортировки -->
-                <template v-if="sortable && header.column.getCanSort()">
-                  <BaseIcon
-                    v-if="sortLoading && currentSortColumn === header.column.id"
-                    icon="refresh-cw"
-                    :size="14"
-                    class="base-table-sort-loading"
-                  />
-                  <BaseIcon
-                    v-else
-                    :icon="getSortIcon(header.column.getIsSorted())"
-                    :size="14"
-                    class="base-table-sort-icon"
-                  />
-                </template>
-                <input type="text" @click.stop />
+              <div class="base-table-header-actions">
+                <!-- Иконка фильтра -->
+                <TableFilter
+                  v-if="header.filterable !== false"
+                  :type="header.type"
+                  :name="header.name"
+                  :value="filterValues[header.accessorKey]"
+                  @update:filter="updateFilter(header.accessorKey, $event)"
+                />
               </div>
             </div>
           </th>
@@ -51,273 +42,161 @@
       </thead>
 
       <tbody class="base-table-body">
-        <template v-if="!loading && table.getRowModel().rows.length">
-          <tr
-            v-for="row in table.getRowModel().rows"
-            :key="row.id"
-            class="base-table-row base-table-row--body"
-            :class="getRowClasses(row)"
-            @click="handleRowClick(row)"
+        <!-- Пустое состояние -->
+        <tr v-if="isEmpty">
+          <th colspan="100%" class="base-table-empty">
+            <slot name="empty">
+              <BaseIcon icon="file-text" :size="60" class="base-table-empty-icon" />
+              <div class="base-table-empty-content">
+                <span class="base-table-empty-title">
+                  {{ emptyText }}
+                </span>
+                <span class="base-table-empty-subtitle">
+                  Попробуйте изменить поисковый запрос
+                </span>
+              </div>
+            </slot>
+          </th>
+        </tr>
+
+        <!-- Оверлей загрузки -->
+        <tr v-if="loading">
+          <th colspan="100%">
+            <slot name="loading">
+              <div>
+                <div class="base-table-loading-overlay">
+                  <div class="base-table-loading">
+                    <BaseIcon icon="refresh-cw" :size="24" class="base-table-loading-icon" />
+                    <span class="base-table-loading-text">{{ loadingText }}</span>
+                  </div>
+                </div>
+              </div>
+            </slot>
+          </th>
+        </tr>
+
+        <tr
+          v-for="(row, rowIndex) in data"
+          :key="`row-${rowIndex}`"
+          class="base-table-row base-table-row--body"
+          :class="getRowClasses(row, rowIndex)"
+          @click="handleRowClick(row, rowIndex, $event)"
+        >
+          <td
+            v-for="header in headers"
+            :key="`cell-${rowIndex}-${header.accessorKey}`"
+            class="base-table-cell base-table-cell--body"
           >
-            <td
-              v-for="cell in row.getVisibleCells()"
-              :key="cell.id"
-              class="base-table-cell base-table-cell--body"
-              :class="getCellClasses(cell.column)"
+            <!-- Слот для кастомизации содержимого ячейки -->
+            <slot
+              :name="`cell-${header.accessorKey}`"
+              :row="row"
+              :value="getCellValue(row, header.accessorKey)"
+              :row-index="rowIndex"
             >
-              <!-- Слот для кастомизации содержимого ячейки -->
-              <slot
-                :name="`cell-${cell.column.id}`"
-                :cell="cell"
-                :row="row"
-                :value="cell.getValue()"
-              >
-                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-              </slot>
-            </td>
-          </tr>
-        </template>
+              {{ getCellValue(row, header.accessorKey) }}
+            </slot>
+          </td>
+        </tr>
       </tbody>
     </table>
-
-    <!-- Состояние загрузки -->
-    <div v-if="loading" class="base-table-loading">
-      <BaseIcon icon="refresh-cw" :size="20" class="base-table-loading-icon" />
-      <span>{{ loadingText }}</span>
-    </div>
-
-    <!-- Пустое состояние -->
-    <div v-else-if="!table.getRowModel().rows.length" class="base-table-empty">
-      <slot name="empty" :search-value="searchValue">
-        <BaseIcon icon="file-text" :size="24" class="base-table-empty-icon" />
-        <div class="base-table-empty-content">
-          <span class="base-table-empty-title">
-            {{ searchValue ? 'Ничего не найдено' : emptyText }}
-          </span>
-          <span v-if="searchValue" class="base-table-empty-subtitle">
-            Попробуйте изменить поисковый запрос
-          </span>
-        </div>
-      </slot>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import {
-  type ColumnDef,
-  type SortDirection,
-  type Row,
-  type Column,
-  FlexRender,
-  getCoreRowModel,
-  useVueTable,
-} from '@tanstack/vue-table'
+import { computed, ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import BaseIcon, { type IconName } from './BaseIcon.vue'
-import BaseInput from './BaseInput.vue'
+import BasePopover from './BasePopover.vue'
 import BaseButton from './BaseButton.vue'
+import TableFilter from '../widgets/TableFilter.vue'
 
-export interface BaseTableProps<TData> {
+export type Sort = 'asc' | 'desc' | false
+export type Type = 'text' | 'number' | 'date' | 'boolean'
+export interface BaseTableHeader {
+  /** Ключ для доступа к данным */
+  accessorKey: string
+  /** Отображаемое имя колонки */
+  name: string
+  /** Ширина колонки */
+  width?: string
+  /** Тип данных в колонке */
+  type?: 'text' | 'number' | 'date' | 'boolean'
+  /** Состояние сортировки */
+  sort?: Sort
+  /** Можно ли сортировать колонку */
+  sortable?: boolean
+  /** Можно ли фильтровать колонку */
+  filterable?: boolean
+}
+
+export interface BaseTableProps<TData extends Record<string, unknown> = Record<string, unknown>> {
   /** Данные таблицы */
   data: TData[]
-  /** Конфигурация колонок */
-  columns: ColumnDef<TData, any>[]
-  /** Заголовок таблицы */
-  title?: string
-
-  // Поиск
-  /** Включить поиск */
-  searchable?: boolean
-  /** Placeholder для поиска */
-  searchPlaceholder?: string
-  /** Значение поиска (для внешнего управления) */
-  searchValue?: string
-  /** Задержка поиска в мс */
-  searchDebounce?: number
-
-  // Пагинация
-  /** Показать пагинацию */
-  showPagination?: boolean
-  /** Текущая страница */
-  currentPage?: number
-  /** Размер страницы */
-  pageSize?: number
-  /** Общее количество элементов */
-  totalItems?: number
-  /** Количество отфильтрованных элементов */
-  filteredItems?: number
-  /** Показать селектор размера страницы */
-  showPageSizeSelector?: boolean
-  /** Опции размера страницы */
-  pageSizeOptions?: number[]
-
-  // Сортировка
-  /** Включить сортировку */
-  sortable?: boolean
-  /** Текущая сортировка */
-  sortBy?: string
-  /** Направление сортировки */
-  sortDirection?: SortDirection
-
-  // Состояния загрузки
-  /** Общее состояние загрузки */
+  /** Конфигурация заголовков */
+  headers: BaseTableHeader[]
+  /** Состояние загрузки */
   loading?: boolean
-  /** Загрузка поиска */
-  searchLoading?: boolean
-  /** Загрузка сортировки */
-  sortLoading?: boolean
-  /** Загрузка пагинации */
-  paginationLoading?: boolean
-
-  // Тексты
   /** Текст при загрузке */
   loadingText?: string
   /** Текст для пустого состояния */
   emptyText?: string
-
-  // Внешний вид
   /** Размер таблицы */
   size?: 'sm' | 'md' | 'lg'
   /** Растянуть на всю ширину */
   fullWidth?: boolean
-  /** Выделяемые строки */
+  /** Выделяемые строки при наведении */
   hoverable?: boolean
-  /** Показать информацию о результатах */
-  showResultsInfo?: boolean
   /** Дополнительные классы */
   class?: string
-
-  // Поведение
-  /** Включить выбор строк */
-  selectable?: boolean
-  /** Множественный выбор */
-  multiSelect?: boolean
-  /** Выбранные строки */
-  selectedRows?: TData[]
+  /** Функция для получения уникального ключа строки */
+  rowKey?: string | ((row: TData, index: number) => string | number)
 }
 
-const props = withDefaults(defineProps<BaseTableProps<any>>(), {
-  searchPlaceholder: 'Поиск...',
-  searchDebounce: 300,
-  showPagination: true,
-  currentPage: 1,
-  pageSize: 10,
-  totalItems: 0,
-  showPageSizeSelector: true,
-  pageSizeOptions: () => [10, 25, 50, 100],
-  sortable: true,
+const props = withDefaults(defineProps<BaseTableProps>(), {
   loading: false,
-  searchLoading: false,
-  sortLoading: false,
-  paginationLoading: false,
   loadingText: 'Загрузка...',
   emptyText: 'Нет данных для отображения',
   size: 'md',
   fullWidth: true,
   hoverable: true,
-  showResultsInfo: true,
-  selectable: false,
-  multiSelect: false,
-  selectedRows: () => [],
+  rowKey: undefined,
 })
 
-const emit = defineEmits<{
-  // События поиска
-  search: [query: string]
-  'search-clear': []
+export interface BaseTableEmits {
+  /** Клик по строке */
+  'row-click': [row: TData, rowIndex: number, event: MouseEvent]
+  /** Изменение сортировки */
+  'sort-change': [accessorKey: string, direction: 'asc' | 'desc' | false]
+  /** Изменение фильтра */
+  'filter-change': [{ accessorKey: string; value: any }[]]
+}
 
-  // События пагинации
-  'page-change': [page: number]
-  'page-size-change': [size: number]
+const emit = defineEmits<BaseTableEmits>()
 
-  // События сортировки
-  'sort-change': [column: string, direction: SortDirection | false]
+// Реактивные данные
+const filterValues = reactive<Record<string, any>>({})
+const sortState = reactive<Record<string, 'asc' | 'desc' | false>>({})
 
-  // События строк
-  'row-click': [row: Row<TData>, event: MouseEvent]
-  'row-select': [row: TData, selected: boolean]
-  'selection-change': [selectedRows: TData[]]
-}>()
+// Вычисляемые свойства
+const isEmpty = computed(() => props.data.length === 0)
 
-// Поиск
-const searchValue = ref(props.searchValue || '')
-const currentSortColumn = ref<string | null>(null)
-
-// Настройка TanStack Table
-const table = useVueTable({
-  get data() {
-    return props.data
-  },
-  get columns() {
-    return props.columns
-  },
-  getCoreRowModel: getCoreRowModel(),
-  manualPagination: true,
-  manualSorting: true,
-  manualFiltering: true,
-})
-
-// Классы
 const tableContainerClasses = computed(() => [
   'base-table-scroll-container',
+  'base-table-container',
   {
-    'base-table--loading': props.loading,
     'base-table--full-width': props.fullWidth,
   },
   props.class,
 ])
 
-const tableClasses = computed(() => [`base-table--${props.size}`])
+const tableClasses = computed(() => ['base-table', `base-table--${props.size}`])
 
-// Получение стилей колонки
-const getColumnStyle = (header: any) => {
-  const styles: Record<string, string> = {}
-
-  if (header.getSize() !== 150) {
-    styles.width = `${header.getSize()}px`
-  }
-
-  if (header.column.columnDef.minWidth) {
-    styles.minWidth = `${header.column.columnDef.minWidth}px`
-  }
-
-  if (header.column.columnDef.maxWidth) {
-    styles.maxWidth = `${header.column.columnDef.maxWidth}px`
-  }
-
-  return styles
+const getCellValue = (row: Record<string, unknown>, accessorKey: string): unknown => {
+  return row[accessorKey] ?? ''
 }
 
-// Получение иконки сортировки
-const getSortIcon = (sortDirection: false | SortDirection): IconName => {
-  if (sortDirection === 'asc') return 'trending-down'
-  if (sortDirection === 'desc') return 'trending-up'
-  return 'arrow-up-down'
-}
-
-// Получение классов для ячейки
-const getCellClasses = (column: any) => {
-  const classes = []
-
-  if (column.columnDef.align) {
-    classes.push(`base-table-cell--align-${column.columnDef.align}`)
-  }
-
-  if (column.columnDef.className) {
-    classes.push(column.columnDef.className)
-  }
-
-  return classes
-}
-
-// Получение классов для строки
-const getRowClasses = (row: Row<TData>) => {
-  const classes = []
-
-  if (row.getIsSelected()) {
-    classes.push('base-table-row--selected')
-  }
+const getRowClasses = (row: Record<string, unknown>, rowIndex: number) => {
+  const classes: string[] = []
 
   if (props.hoverable) {
     classes.push('base-table-row--hoverable')
@@ -326,88 +205,62 @@ const getRowClasses = (row: Row<TData>) => {
   return classes
 }
 
-const handleSort = (column: Column<TData>) => {
-  if (!props.sortable || !column.getCanSort()) return
+const handleRowClick = (
+  row: Record<string, unknown>,
+  rowIndex: number,
+  event: MouseEvent,
+): void => {
+  emit('row-click', row, rowIndex, event)
+}
 
-  currentSortColumn.value = column.id
-  const currentSort = column.getIsSorted()
+// Методы сортировки
+const getCurrentSort = (accessorKey: string): 'asc' | 'desc' | false => {
+  return sortState[accessorKey] || false
+}
 
-  let newDirection: SortDirection | false
-  if (currentSort === false) {
-    newDirection = 'asc'
-  } else if (currentSort === 'asc') {
-    newDirection = 'desc'
-  } else {
-    newDirection = false
+const getSortIcon = (sort?: 'asc' | 'desc' | false): IconName => {
+  if (sort === 'asc') return 'chevron-down'
+  if (sort === 'desc') return 'chevron-up'
+  return 'chevrons-up-down'
+}
+
+const getSortIconClass = (sort?: 'asc' | 'desc' | false): string => {
+  return sort ? 'base-table-header-sort-icon--active' : ''
+}
+
+const handleSort = (accessorKey: string): void => {
+  const currentSort = sortState[accessorKey] || false
+  let newSort: 'asc' | 'desc' | false = 'asc'
+
+  if (currentSort === 'asc') {
+    newSort = 'desc'
+  } else if (currentSort === 'desc') {
+    newSort = false
   }
 
-  emit('sort-change', column.id, newDirection)
+  // Сбрасываем все сортировки
+  Object.keys(sortState).forEach((key) => {
+    sortState[key] = false
+  })
+
+  // Устанавливаем новую сортировку
+  if (newSort) {
+    sortState[accessorKey] = newSort
+  }
+
+  emit('sort-change', accessorKey, newSort)
 }
 
-const handleRowClick = (row: Row<TData>, event?: MouseEvent) => {
-  const mouseEvent = event || new MouseEvent('click')
-  emit('row-click', row, mouseEvent)
+const updateFilter = (accessorKey, value) => {
+  filterValues[accessorKey] = value
+  emit('filter-change', filterValues)
 }
-
-// Следим за внешними изменениями поиска
-watch(
-  () => props.searchValue,
-  (newValue) => {
-    if (newValue !== searchValue.value) {
-      searchValue.value = newValue || ''
-    }
-  },
-)
 </script>
 
 <style scoped>
-.base-table-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-lg);
-  width: 100%;
-}
-
-.base-table-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-spacing-lg);
-  flex-wrap: wrap;
-}
-
-.base-table-title-section {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-md);
-}
-
-.base-table-title {
-  font-size: var(--ds-font-size-lg);
-  font-weight: 600;
-  color: var(--ds-text-primary);
-  margin: 0;
-}
-
-.base-table-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-sm);
-}
-
-.base-table-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-md);
-  flex-wrap: wrap;
-}
-
-.base-table-search {
-  max-width: 320px;
-}
-
 .base-table-container {
   position: relative;
+
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
@@ -428,6 +281,9 @@ watch(
   table-layout: auto;
 }
 
+.base-table-body {
+  position: relative;
+}
 .base-table-row {
   border-bottom: 1px solid var(--ds-border);
 }
@@ -442,10 +298,6 @@ watch(
 
 .base-table-row--body.base-table-row--hoverable:hover {
   background-color: var(--ds-button-ghost-bg-hover);
-}
-
-.base-table-row--selected {
-  background-color: var(--ds-button-ghost-bg-active);
 }
 
 .base-table-cell {
@@ -486,50 +338,50 @@ watch(
   font-size: var(--ds-font-size-md);
 }
 
-/* Выравнивание */
-.base-table-cell--align-left {
-  text-align: left;
+.base-table-header-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
 }
-
-.base-table-cell--align-center {
-  text-align: center;
-}
-
-.base-table-cell--align-right {
-  text-align: right;
-}
-
 /* Заголовок колонки */
 .base-table-header-content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--ds-spacing-xs);
   cursor: default;
   min-height: 20px;
+  width: 100%;
 }
 
-.base-table-header-content--sortable {
-  cursor: pointer;
-  user-select: none;
+.base-table-header-title {
+  flex: 1;
+  min-width: 0;
 }
 
-.base-table-header-content--sortable:hover {
-  color: var(--ds-text-primary);
-}
-
-.base-table-sort-icon {
-  opacity: 0.5;
-  transition: opacity 0.2s ease;
+.base-table-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
   flex-shrink: 0;
 }
 
-.base-table-header-content--sortable:hover .base-table-sort-icon {
-  opacity: 1;
-}
+/* Оверлей загрузки */
 
-.base-table-sort-loading {
-  animation: spin 1s linear infinite;
-  color: var(--ds-text-primary);
+.base-table-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* z-index: 1001; */
+  background-color: rgba(140, 140, 140, 0.1);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 /* Состояния */
@@ -538,133 +390,47 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--ds-spacing-xl);
+  padding: var(--ds-spacing-lg);
   color: var(--ds-text-secondary);
   font-size: var(--ds-font-size-sm);
-  gap: var(--ds-spacing-md);
+  gap: var(--ds-spacing-sm);
+  background-color: var(--ds-surface);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-md);
+  border: 1px solid var(--ds-border);
 }
-
 .base-table-loading-icon {
-  animation: spin 1s linear infinite;
+  animation: spin 2s linear infinite;
+  color: var(--ds-accent-primary);
 }
-
-.base-table-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--ds-spacing-xl);
-  color: var(--ds-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  gap: var(--ds-spacing-md);
-}
-
-.base-table-empty-icon {
-  opacity: 0.5;
-}
-
-.base-table-empty-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ds-spacing-xs);
-  text-align: center;
-}
-
-.base-table-empty-title {
+.base-table-loading-text {
   font-weight: 500;
   color: var(--ds-text-primary);
 }
 
-.base-table-empty-subtitle {
-  font-size: var(--ds-font-size-xs);
-}
-
-/* Информация о результатах */
-.base-table-results-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--ds-spacing-sm);
-}
-
-.base-table-results-text {
-  font-size: var(--ds-font-size-xs);
+.base-table-empty {
+  padding: var(--ds-spacing-xl);
   color: var(--ds-text-secondary);
+  font-size: var(--ds-font-size-md);
 }
-
-/* Пагинация */
-.base-table-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-spacing-md);
-  flex-wrap: wrap;
-  padding: var(--ds-spacing-sm) 0;
-}
-
-.base-table-pagination-info {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-lg);
-}
-
-.base-table-pagination-text {
-  font-size: var(--ds-font-size-xs);
-  color: var(--ds-text-secondary);
-  white-space: nowrap;
-}
-
-.base-table-page-size {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-sm);
-}
-
-.base-table-page-size-label {
-  font-size: var(--ds-font-size-xs);
-  color: var(--ds-text-secondary);
-  white-space: nowrap;
-}
-
-.base-table-page-size-select {
-  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-sm);
-  background-color: var(--ds-surface);
-  color: var(--ds-text-primary);
-  font-size: var(--ds-font-size-xs);
-  cursor: pointer;
-}
-
-.base-table-page-size-select:disabled {
+.base-table-empty-icon {
   opacity: 0.5;
-  cursor: not-allowed;
 }
-
-.base-table-pagination-controls {
+.base-table-empty-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--ds-spacing-xs);
+  gap: var(--ds-spacing-md);
+  text-align: center;
 }
-
-.base-table-pagination-pages {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-spacing-xs);
+.base-table-empty-title {
+  font-weight: 600;
+  font-size: var(--ds-font-size-xl);
+  color: var(--ds-text-primary);
 }
-
-.base-table-pagination-ellipsis {
-  padding: 0 var(--ds-spacing-xs);
-  color: var(--ds-text-secondary);
-  font-size: var(--ds-font-size-sm);
+.base-table-empty-subtitle {
+  font-size: var(--ds-font-size-md);
 }
-
-.base-table-page-active {
-  background-color: var(--ds-button-primary-bg) !important;
-  color: var(--ds-button-primary-text) !important;
-}
-
 /* Анимации */
 @keyframes spin {
   from {
@@ -672,55 +438,6 @@ watch(
   }
   to {
     transform: rotate(360deg);
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .base-table-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .base-table-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .base-table-search {
-    max-width: none;
-  }
-
-  .base-table-pagination {
-    flex-direction: column;
-    gap: var(--ds-spacing-sm);
-  }
-
-  .base-table-pagination-info {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--ds-spacing-sm);
-  }
-
-  .base-table-pagination-controls {
-    justify-content: center;
-  }
-
-  .base-table-pagination-pages {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .base-table-pagination-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .base-table-pagination-pages {
-    order: -1;
-    margin-bottom: var(--ds-spacing-sm);
   }
 }
 </style>

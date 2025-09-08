@@ -101,7 +101,7 @@
   --ds-button-secondary-bg: light-dark(#ffffff, var(--ds-gray-700));
   --ds-button-secondary-bg-hover: light-dark(var(--ds-gray-50), var(--ds-gray-600));
   --ds-button-secondary-text: light-dark(var(--ds-gray-700), var(--ds-gray-100));
-  --ds-button-secondary-border: light-dark(var(--ds-gray-300), var(--ds-gray-600));
+  --ds-button-secondary-border: light-dark(var(--ds-gray-200), var(--ds-gray-600));
 
   --ds-button-success-bg: var(--ds-success-600);
   --ds-button-success-bg-hover: var(--ds-success-700);
@@ -115,6 +115,12 @@
   --ds-button-danger-bg-hover: var(--ds-danger-700);
   --ds-button-danger-text: #ffffff;
 
+  /* Ghost Button Colors */
+  --ds-button-ghost-bg-hover: light-dark(var(--ds-gray-100), var(--ds-gray-700));
+  --ds-button-ghost-border-hover: light-dark(var(--ds-gray-300), var(--ds-gray-600));
+  --ds-button-ghost-bg-active: light-dark(var(--ds-primary-50), var(--ds-gray-600));
+  --ds-button-ghost-text-active: light-dark(var(--ds-primary-600), var(--ds-gray-100));
+  --ds-button-ghost-border-active: light-dark(var(--ds-primary-600), var(--ds-gray-500));
   /* Badge */
   --ds-badge-primary-bg: light-dark(var(--ds-primary-100), var(--ds-primary-600));
   --ds-badge-primary-text: light-dark(var(--ds-primary-600), var(--ds-primary-100));
@@ -138,13 +144,6 @@
   --ds-toast-success-bg: light-dark(var(--ds-success-50), var(--ds-gray-800));
   --ds-toast-warning-bg: light-dark(var(--ds-warning-50), var(--ds-gray-800));
   --ds-toast-danger-bg: light-dark(var(--ds-danger-50), var(--ds-gray-800));
-
-  /* Ghost Button Colors */
-  --ds-button-ghost-bg-hover: light-dark(var(--ds-gray-100), var(--ds-gray-700));
-  --ds-button-ghost-border-hover: light-dark(var(--ds-gray-300), var(--ds-gray-600));
-  --ds-button-ghost-bg-active: light-dark(var(--ds-primary-50), var(--ds-gray-600));
-  --ds-button-ghost-text-active: light-dark(var(--ds-primary-600), var(--ds-gray-100));
-  --ds-button-ghost-border-active: light-dark(var(--ds-primary-600), var(--ds-gray-500));
 
   /* Spacing Scale */
   --ds-spacing-xs: 0.25rem; /* 4px */
@@ -179,9 +178,7 @@
     0 20px 25px -5px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
     0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
 
-  --ds-tooltip-shadow:
-    0 0px 20px 5px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
+  --ds-tooltip-shadow: 0 0px 20px 5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
   --ds-select-shadow:
     0 10px 20px -5px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),

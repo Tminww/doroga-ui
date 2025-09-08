@@ -3,8 +3,10 @@ import BaseTable from '@/components/ui/BaseTable.vue'
 import BaseBadge from '@/components/ui/BaseBadge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { ref } from 'vue'
-import ExtBaseTable, { type Sort, type BaseTableHeader } from '@/components/ui/ExtBaseTable.vue'
+import BaseDataTable, { type Sort, type BaseTableHeader } from '@/components/ui/BaseDataTable.vue'
 import BasePopover from '@/components/ui/BasePopover.vue'
+import BasePagination from '@/components/ui/BasePagination.vue'
+import BaseDialog from '@/components/ui/BaseDialog.vue'
 
 const tableHeaders: BaseTableHeader = [
   {
@@ -72,7 +74,7 @@ const tableData = ref([
     fio: 'Петров',
     email: 'ivan@example.com',
     role: 'Админ',
-    createdAt: '2024-03-10',
+    createdAt: '2024-03-20',
   },
   {
     id: 2,
@@ -80,7 +82,7 @@ const tableData = ref([
     fio: 'Смирнова',
     email: 'anna@example.com',
     role: 'Пользователь',
-    createdAt: '2024-04-05',
+    createdAt: '2024-04-25',
   },
   {
     id: 3,
@@ -106,8 +108,137 @@ const tableData = ref([
     role: 'Пользователь',
     createdAt: '2024-08-15',
   },
+  {
+    id: 6,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 7,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+  {
+    id: 8,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 9,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+  {
+    id: 10,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 11,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+  {
+    id: 12,
+    name: 'Анна',
+    fio: 'Смирнова',
+    email: 'anna@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-04-05',
+  },
+  {
+    id: 13,
+    name: 'Сергей',
+    fio: 'Иванов',
+    email: 'sergey@example.com',
+    role: 'Модератор',
+    createdAt: '2024-06-22',
+  },
+  {
+    id: 14,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 15,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+  {
+    id: 16,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 17,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+  {
+    id: 18,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 19,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
+  {
+    id: 20,
+    name: 'Ольга',
+    fio: 'Олейник',
+    email: 'olga@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 21,
+    name: 'Дмитрий',
+    fio: 'Сидоров',
+    email: 'dmitry@example.com',
+    role: 'Пользователь',
+    createdAt: '2024-08-15',
+  },
 ])
 
+const ITEM_PER_PAGE = 5
 const loading = ref(false)
 // Функция сортировки данных
 const sortData = <T,>(data: T[], accessorKey: string, direction: Sort): T[] => {
@@ -198,6 +329,11 @@ const filterData = async (data: DataItem[], filters: Filter) => {
   })
 }
 
+const currentPage = ref(1)
+const handlePage = (value: number) => {
+  currentPage.value = value
+  console.log(currentPage.value)
+}
 // Пример использования
 const handleFilterChange = async (filters: { accessorKey: string; value: any }[]) => {
   tableData.value = await filterData(tableData.value, filters)
@@ -207,26 +343,16 @@ const handleFilterChange = async (filters: { accessorKey: string; value: any }[]
 </script>
 
 <template>
-  <BaseTable :data="tableData" :headers="tableHeaders">
-    <template #cell-fio="{ value }">
-      <BaseBadge :title="value" variant="danger" />
-    </template>
-    <template #cell-role="{ value }">
-      <BaseBadge :title="value" variant="secondary" />
-    </template>
-    <template #cell-actions="{ row }">
-      <BaseButton
-        @click="console.log(row)"
-        variant="secondary"
-        title="Подробнее"
-        size="sm"
-      /> </template
-  ></BaseTable>
-  <ExtBaseTable
+  <BaseDataTable
     @sort-change="handleSortChange"
     @filter-change="handleFilterChange"
     :loading="loading"
-    :data="tableData"
+    :data="
+      tableData.slice(
+        ITEM_PER_PAGE * (currentPage - 1),
+        ITEM_PER_PAGE * (currentPage - 1) + ITEM_PER_PAGE,
+      )
+    "
     :headers="tableHeaders"
   >
     <template #cell-fio="{ value }">
@@ -236,15 +362,23 @@ const handleFilterChange = async (filters: { accessorKey: string; value: any }[]
       <BaseBadge :title="value" variant="secondary" />
     </template>
     <template #cell-actions="{ row }">
-      <BaseButton
-        @click="console.log(row)"
-        variant="secondary"
-        title="Подробнее"
-        size="sm"
-      /> </template
-  ></ExtBaseTable>
-  <BasePopover>
-    <BaseButton icon-only :icon-size="16" variant="ghost" size="sm" left-icon="filter"
-  /></BasePopover>
+      <BaseDialog
+        close-only-button
+        use-close-button
+        :use-cancel-button="false"
+        :use-ok-button="false"
+      >
+        <BaseButton @click="console.log(row)" variant="secondary" title="Подробнее" size="sm" />
+        <template #content>
+          {{ row }}
+        </template>
+      </BaseDialog>
+    </template>
+  </BaseDataTable>
+  <BasePagination
+    @update:page="handlePage"
+    :total="tableData.length"
+    :items-per-page="ITEM_PER_PAGE"
+  />
 </template>
 <style scoped></style>
