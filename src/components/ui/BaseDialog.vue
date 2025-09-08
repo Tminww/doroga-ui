@@ -38,7 +38,7 @@ const props = withDefaults(defineProps<BaseDialogProps>(), {
     variant: 'ghost',
     size: 'md',
     iconOnly: true,
-    leftIcon: 'close',
+    leftIcon: 'x',
     iconSize: 20,
     disabled: false,
     fullWidth: false,
@@ -157,11 +157,10 @@ input {
 }
 
 .dialog-content {
-  background-color: white;
-  border-radius: 6px;
-  box-shadow:
-    hsl(206 22% 7% / 35%) 0px 10px 38px -10px,
-    hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
+  background-color: var(--ds-button-secondary-bg);
+  box-shadow: var(--ds-tooltip-shadow);
+  border-radius: var(--ds-radius-lg);
+
   position: fixed;
   top: 50%;
   left: 50%;

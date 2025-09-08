@@ -291,8 +291,8 @@ const getColumnStyle = (header: any) => {
 
 // Получение иконки сортировки
 const getSortIcon = (sortDirection: false | SortDirection): IconName => {
-  if (sortDirection === 'asc') return 'trending-up'
-  if (sortDirection === 'desc') return 'trending-down'
+  if (sortDirection === 'asc') return 'trending-down'
+  if (sortDirection === 'desc') return 'trending-up'
   return 'arrow-up-down'
 }
 

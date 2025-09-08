@@ -417,7 +417,7 @@
   <section class="component-demo">
     <h3 class="component-demo-title">Таблицы</h3>
     <div class="component-demo-content">
-      <BaseTable :data="tableData" :headers="tableColumns">
+      <!-- <BaseTable :data="tableData" :headers="tableColumns">
         <template #cell-role="{ value }">
           <BaseBadge :title="value" variant="secondary" />
         </template>
@@ -428,12 +428,12 @@
             title="Подробнее"
             size="sm"
           /> </template
-      ></BaseTable>
+      ></BaseTable> -->
     </div>
   </section>
   <section class="component-demo">
     <h3 class="component-demo-title">Таблицы</h3>
-    <TableUsage />
+    <!-- <TableUsage /> -->
   </section>
 </template>
 
