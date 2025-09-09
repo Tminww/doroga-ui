@@ -2,21 +2,23 @@
 import BaseTable from '@/components/ui/BaseTable.vue'
 import BaseBadge from '@/components/ui/BaseBadge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import BaseDataTable, { type Sort, type BaseTableHeader } from '@/components/ui/BaseDataTable.vue'
 import BasePopover from '@/components/ui/BasePopover.vue'
 import BasePagination from '@/components/ui/BasePagination.vue'
 import BaseDialog from '@/components/ui/BaseDialog.vue'
+import BaseSelect from '@/components/ui/BaseSelect.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
 
-const tableHeaders: BaseTableHeader = [
+// Исправленный тип для заголовков - должен быть массив
+const tableHeaders: BaseTableHeader[] = [
   {
     accessorKey: 'id',
     name: 'ID',
     type: 'number',
-    width: '50px',
+    width: '80px',
     sortable: true,
     filterable: false,
-    sort: 'asc',
   },
   {
     accessorKey: 'name',
@@ -24,7 +26,6 @@ const tableHeaders: BaseTableHeader = [
     type: 'text',
     sortable: true,
     filterable: true,
-    sort: null,
   },
   {
     accessorKey: 'fio',
@@ -32,7 +33,6 @@ const tableHeaders: BaseTableHeader = [
     type: 'text',
     sortable: true,
     filterable: true,
-    sort: null,
   },
   {
     accessorKey: 'email',
@@ -40,7 +40,6 @@ const tableHeaders: BaseTableHeader = [
     type: 'text',
     sortable: true,
     filterable: true,
-    sort: null,
   },
   {
     accessorKey: 'role',
@@ -48,7 +47,6 @@ const tableHeaders: BaseTableHeader = [
     type: 'text',
     sortable: true,
     filterable: true,
-    sort: null,
   },
   {
     accessorKey: 'createdAt',
@@ -56,18 +54,18 @@ const tableHeaders: BaseTableHeader = [
     type: 'date',
     sortable: true,
     filterable: true,
-    sort: null,
   },
   {
     accessorKey: 'actions',
     name: 'Действия',
-    width: '10px',
+    width: '150px',
     sortable: false,
     filterable: false,
   },
 ]
 
-const tableData = ref([
+// Исходные данные (не изменяются при фильтрации)
+const originalData = [
   {
     id: 1,
     name: 'Иван',
@@ -110,136 +108,147 @@ const tableData = ref([
   },
   {
     id: 6,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-01',
+    name: 'Мария',
+    fio: 'Козлова',
+    email: 'maria@example.com',
+    role: 'Модератор',
+    createdAt: '2024-07-10',
   },
   {
     id: 7,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
+    name: 'Александр',
+    fio: 'Волков',
+    email: 'alex@example.com',
     role: 'Пользователь',
-    createdAt: '2024-08-15',
+    createdAt: '2024-08-20',
   },
   {
     id: 8,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-01',
+    name: 'Екатерина',
+    fio: 'Белова',
+    email: 'kate@example.com',
+    role: 'Админ',
+    createdAt: '2024-05-15',
   },
   {
     id: 9,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
+    name: 'Максим',
+    fio: 'Орлов',
+    email: 'max@example.com',
     role: 'Пользователь',
-    createdAt: '2024-08-15',
+    createdAt: '2024-06-30',
   },
   {
     id: 10,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-01',
+    name: 'Татьяна',
+    fio: 'Жукова',
+    email: 'tanya@example.com',
+    role: 'Модератор',
+    createdAt: '2024-07-25',
   },
   {
     id: 11,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
+    name: 'Владимир',
+    fio: 'Морозов',
+    email: 'vladimir@example.com',
     role: 'Пользователь',
-    createdAt: '2024-08-15',
+    createdAt: '2024-08-05',
   },
   {
     id: 12,
-    name: 'Анна',
-    fio: 'Смирнова',
-    email: 'anna@example.com',
+    name: 'Людмила',
+    fio: 'Соколова',
+    email: 'lyuda@example.com',
     role: 'Пользователь',
-    createdAt: '2024-04-05',
+    createdAt: '2024-04-10',
   },
   {
     id: 13,
-    name: 'Сергей',
-    fio: 'Иванов',
-    email: 'sergey@example.com',
+    name: 'Андрей',
+    fio: 'Лебедев',
+    email: 'andrey@example.com',
     role: 'Модератор',
-    createdAt: '2024-06-22',
+    createdAt: '2024-06-18',
   },
   {
     id: 14,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
+    name: 'Светлана',
+    fio: 'Попова',
+    email: 'svetlana@example.com',
     role: 'Пользователь',
-    createdAt: '2024-07-01',
+    createdAt: '2024-07-03',
   },
   {
     id: 15,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
+    name: 'Юрий',
+    fio: 'Захаров',
+    email: 'yury@example.com',
     role: 'Пользователь',
-    createdAt: '2024-08-15',
+    createdAt: '2024-08-12',
   },
   {
     id: 16,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-01',
+    name: 'Наталья',
+    fio: 'Медведева',
+    email: 'natasha@example.com',
+    role: 'Админ',
+    createdAt: '2024-05-28',
   },
   {
     id: 17,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
+    name: 'Олег',
+    fio: 'Борисов',
+    email: 'oleg@example.com',
     role: 'Пользователь',
-    createdAt: '2024-08-15',
+    createdAt: '2024-08-08',
   },
   {
     id: 18,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-01',
+    name: 'Ирина',
+    fio: 'Романова',
+    email: 'irina@example.com',
+    role: 'Модератор',
+    createdAt: '2024-06-14',
   },
   {
     id: 19,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
+    name: 'Павел',
+    fio: 'Васильев',
+    email: 'pavel@example.com',
     role: 'Пользователь',
-    createdAt: '2024-08-15',
+    createdAt: '2024-08-18',
   },
   {
     id: 20,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
+    name: 'Елена',
+    fio: 'Тихонова',
+    email: 'elena@example.com',
     role: 'Пользователь',
-    createdAt: '2024-07-01',
+    createdAt: '2024-07-12',
   },
   {
     id: 21,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-15',
+    name: 'Михаил',
+    fio: 'Крылов',
+    email: 'mikhail@example.com',
+    role: 'Модератор',
+    createdAt: '2024-08-22',
   },
-])
+]
 
-const ITEM_PER_PAGE = 5
-const loading = ref(false)
+const ITEMS_PER_PAGE = 5
+const loading = ref(true)
+const currentPage = ref(1)
+const currentFilters = ref<Record<string, any>>({})
+const currentSort = ref<{ key: string; direction: Sort }>({ key: '', direction: false })
+
+// Опции для фильтра ролей
+const roleOptions = [
+  { name: 'Админ', value: 'Админ' },
+  { name: 'Модератор', value: 'Модератор' },
+  { name: 'Пользователь', value: 'Пользователь' },
+]
+
 // Функция сортировки данных
 const sortData = <T,>(data: T[], accessorKey: string, direction: Sort): T[] => {
   if (!direction) {
@@ -270,56 +279,27 @@ const sortData = <T,>(data: T[], accessorKey: string, direction: Sort): T[] => {
   })
 }
 
-// Опционально - можете обрабатывать события сортировки
-const handleSortChange = (accessorKey: string, direction: Sort) => {
-  console.log(`Сортировка по ${accessorKey}: ${direction}`)
-  tableData.value = sortData(tableData.value, accessorKey, direction)
-}
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-const filterData = async (data: DataItem[], filters: Filter) => {
-  // Если нет фильтров, возвращаем все данные
+// Функция фильтрации данных
+const filterData = (data: any[], filters: Record<string, any>) => {
   if (!filters || Object.keys(filters).length === 0) return data
-  loading.value = true
-  await delay(5000)
-  loading.value = false
-  // Фильтруем данные
+
   return data.filter((item) => {
     return Object.entries(filters).every(([key, value]) => {
-      // Проверяем существование ключа
-      if (!item.hasOwnProperty(key)) return true
+      if (!value || value === '') return true
 
-      // Получаем значение из объекта
       const itemValue = item[key]
 
-      // Обработка null и undefined
-      if (value === undefined || value === null) return true
-
-      // Обработка строковых значений
       if (typeof value === 'string') {
-        // Для дат используем специальный формат
         if (key === 'createdAt') {
-          const dateValue = new Date(value)
-          const itemDate = new Date(itemValue)
-          return itemDate.toISOString() === dateValue.toISOString()
+          return itemValue.includes(value)
         }
         return String(itemValue).toLowerCase().includes(value.toLowerCase())
       }
 
-      // Обработка числовых значений
       if (typeof value === 'number') {
         return itemValue === value
       }
 
-      // Обработка булевых значений
-      if (typeof value === 'boolean') {
-        return itemValue === value
-      }
-
-      // Обработка массивов (для множественного выбора)
       if (Array.isArray(value)) {
         return value.includes(itemValue)
       }
@@ -329,56 +309,185 @@ const filterData = async (data: DataItem[], filters: Filter) => {
   })
 }
 
-const currentPage = ref(1)
-const handlePage = (value: number) => {
-  currentPage.value = value
-  console.log(currentPage.value)
+// Функция задержки для имитации загрузки
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
-// Пример использования
-const handleFilterChange = async (filters: { accessorKey: string; value: any }[]) => {
-  tableData.value = await filterData(tableData.value, filters)
-  // Здесь можно использовать отфильтрованные данные
+
+// Вычисляемые свойства для обработанных данных
+const processedData = computed(() => {
+  let data = [...originalData]
+
+  // Применяем фильтры
+  data = filterData(data, currentFilters.value)
+
+  // Применяем сортировку
+  if (currentSort.value.direction) {
+    data = sortData(data, currentSort.value.key, currentSort.value.direction)
+  }
+
+  return data
+})
+
+// Пагинированные данные
+const paginatedData = computed(() => {
+  const start = ITEMS_PER_PAGE * (currentPage.value - 1)
+  const end = start + ITEMS_PER_PAGE
+  return processedData.value.slice(start, end)
+})
+
+// Обработчик изменения сортировки
+const handleSortChange = (accessorKey: string, direction: Sort) => {
+  console.log(`Сортировка по ${accessorKey}: ${direction}`)
+  currentSort.value = { key: accessorKey, direction }
+  currentPage.value = 1 // Сбрасываем на первую страницу
+}
+
+// Обработчик изменения фильтров
+const handleFilterChange = async (filters: Record<string, any>) => {
+  loading.value = true
+
+  // Имитация задержки загрузки
+  await delay(500)
+
+  currentFilters.value = { ...filters }
+  currentPage.value = 1 // Сбрасываем на первую страницу
+  loading.value = false
+
   console.log('Отфильтрованные данные:', filters)
+}
+
+// Обработчик изменения страницы
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  console.log('Текущая страница:', currentPage.value)
+}
+
+// Функция получения варианта бейджа для роли
+const getRoleVariant = (role: string) => {
+  switch (role) {
+    case 'Админ':
+      return 'danger'
+    case 'Модератор':
+      return 'warning'
+    case 'Пользователь':
+      return 'secondary'
+    default:
+      return 'primary'
+  }
 }
 </script>
 
 <template>
-  <BaseDataTable
-    @sort-change="handleSortChange"
-    @filter-change="handleFilterChange"
-    :loading="loading"
-    :data="
-      tableData.slice(
-        ITEM_PER_PAGE * (currentPage - 1),
-        ITEM_PER_PAGE * (currentPage - 1) + ITEM_PER_PAGE,
-      )
-    "
-    :headers="tableHeaders"
-  >
-    <template #cell-fio="{ value }">
-      <BaseBadge :title="value" variant="danger" />
-    </template>
-    <template #cell-role="{ value }">
-      <BaseBadge :title="value" variant="secondary" />
-    </template>
-    <template #cell-actions="{ row }">
-      <BaseDialog
-        close-only-button
-        use-close-button
-        :use-cancel-button="false"
-        :use-ok-button="false"
-      >
-        <BaseButton @click="console.log(row)" variant="secondary" title="Подробнее" size="sm" />
-        <template #content>
-          {{ row }}
-        </template>
-      </BaseDialog>
-    </template>
-  </BaseDataTable>
-  <BasePagination
-    @update:page="handlePage"
-    :total="tableData.length"
-    :items-per-page="ITEM_PER_PAGE"
-  />
+  <div class="directions-view">
+    <BaseDataTable
+      :data="paginatedData"
+      :headers="tableHeaders"
+      :loading="loading"
+      @sort-change="handleSortChange"
+      @filter-change="handleFilterChange"
+    >
+      <!-- Кастомный фильтр для роли -->
+      <template #filter-role="{ value, updateFilter }">
+        <BaseSelect
+          :items="roleOptions"
+          :model-value="value"
+          @update:model-value="updateFilter"
+          placeholder="Все роли"
+          size="sm"
+          clearable
+          class="w-full"
+        />
+      </template>
+
+      <!-- Кастомные ячейки -->
+      <template #cell-fio="{ value }">
+        <BaseBadge :title="value" variant="primary" />
+      </template>
+
+      <template #cell-role="{ value }">
+        <BaseBadge :title="value" :variant="getRoleVariant(value)" />
+      </template>
+
+      <template #cell-actions="{ row }">
+        <div class="flex gap-2">
+          <BaseDialog
+            close-only-button
+            use-close-button
+            :use-cancel-button="false"
+            :use-ok-button="false"
+          >
+            <BaseButton variant="secondary" title="Подробнее" size="sm" />
+            <template #content>
+              <div class="user-details">
+                <h3>Информация о пользователе</h3>
+                <div class="details-grid">
+                  <div><strong>ID:</strong> {{ row.id }}</div>
+                  <div><strong>Имя:</strong> {{ row.name }}</div>
+                  <div><strong>Фамилия:</strong> {{ row.fio }}</div>
+                  <div><strong>Email:</strong> {{ row.email }}</div>
+                  <div><strong>Роль:</strong> {{ row.role }}</div>
+                  <div><strong>Дата регистрации:</strong> {{ row.createdAt }}</div>
+                </div>
+              </div>
+            </template>
+          </BaseDialog>
+        </div>
+      </template>
+    </BaseDataTable>
+
+    <!-- Пагинация -->
+    <div class="pagination-wrapper">
+      <BasePagination
+        :current-page="currentPage"
+        :total="processedData.length"
+        :items-per-page="ITEMS_PER_PAGE"
+        @update:page="handlePageChange"
+      />
+    </div>
+  </div>
 </template>
-<style scoped></style>
+
+<style scoped>
+.directions-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.user-details h3 {
+  margin-bottom: 1rem;
+  color: var(--ds-text-primary);
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.details-grid div {
+  padding: 0.5rem;
+  background-color: var(--ds-surface-secondary);
+  border-radius: var(--ds-radius-sm);
+}
+
+.flex {
+  display: flex;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.w-full {
+  width: 100%;
+}
+</style>

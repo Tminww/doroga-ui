@@ -182,8 +182,7 @@ const handleClear = () => {
 
 .base-input:focus {
   outline: none;
-  border-color: var(--ds-border-focus);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px var(--ds-border-focus);
 }
 
 .base-input:disabled {

@@ -71,6 +71,10 @@
   --ds-danger-900: #7f1d1d;
   --ds-danger-950: #450a0a;
 
+  /* Accent Colors */
+  --ds-accent-primary: var(--ds-primary-600);
+  --ds-accent-secondary: var(--ds-gray-600);
+
   /* Semantic Colors using light-dark() function */
   --ds-background: light-dark(var(--ds-gray-50), var(--ds-gray-900));
   --ds-background-secondary: light-dark(#ffffff, var(--ds-gray-800));
@@ -121,29 +125,51 @@
   --ds-button-ghost-bg-active: light-dark(var(--ds-primary-50), var(--ds-gray-600));
   --ds-button-ghost-text-active: light-dark(var(--ds-primary-600), var(--ds-gray-100));
   --ds-button-ghost-border-active: light-dark(var(--ds-primary-600), var(--ds-gray-500));
-  /* Badge */
-  --ds-badge-primary-bg: light-dark(var(--ds-primary-100), var(--ds-primary-600));
-  --ds-badge-primary-text: light-dark(var(--ds-primary-600), var(--ds-primary-100));
 
-  --ds-badge-secondary-bg: light-dark(var(--ds-gray-200), var(--ds-gray-500));
-  --ds-badge-secondary-text: light-dark(var(--ds-gray-600), var(--ds-gray-100));
+  /* Badge Colors */
+  --ds-badge-primary-bg: light-dark(var(--ds-primary-100), var(--ds-primary-900));
+  --ds-badge-primary-text: light-dark(var(--ds-primary-700), var(--ds-primary-300));
+  --ds-badge-primary-border: light-dark(var(--ds-primary-200), var(--ds-primary-800));
 
-  --ds-badge-danger-bg: light-dark(var(--ds-danger-200), var(--ds-danger-600));
-  --ds-badge-danger-text: light-dark(var(--ds-danger-700), var(--ds-danger-50));
+  --ds-badge-secondary-bg: light-dark(var(--ds-gray-100), var(--ds-gray-800));
+  --ds-badge-secondary-text: light-dark(var(--ds-gray-700), var(--ds-gray-300));
+  --ds-badge-secondary-border: light-dark(var(--ds-gray-200), var(--ds-gray-700));
 
-  --ds-badge-success-bg: light-dark(var(--ds-success-200), var(--ds-success-600));
-  --ds-badge-success-text: light-dark(var(--ds-success-700), var(--ds-success-100));
+  --ds-badge-success-bg: light-dark(var(--ds-success-100), var(--ds-success-900));
+  --ds-badge-success-text: light-dark(var(--ds-success-700), var(--ds-success-300));
+  --ds-badge-success-border: light-dark(var(--ds-success-200), var(--ds-success-800));
 
-  --ds-badge-warning-bg: light-dark(var(--ds-warning-200), var(--ds-warning-600));
-  --ds-badge-warning-text: light-dark(var(--ds-warning-700), var(--ds-warning-50));
+  --ds-badge-warning-bg: light-dark(var(--ds-warning-100), var(--ds-warning-900));
+  --ds-badge-warning-text: light-dark(var(--ds-warning-700), var(--ds-warning-300));
+  --ds-badge-warning-border: light-dark(var(--ds-warning-200), var(--ds-warning-800));
 
-  /* Toast */
+  --ds-badge-danger-bg: light-dark(var(--ds-danger-100), var(--ds-danger-900));
+  --ds-badge-danger-text: light-dark(var(--ds-danger-700), var(--ds-danger-300));
+  --ds-badge-danger-border: light-dark(var(--ds-danger-200), var(--ds-danger-800));
 
+  /* Toast Colors */
   --ds-toast-primary-bg: light-dark(var(--ds-primary-50), var(--ds-gray-800));
+  --ds-toast-primary-border: light-dark(var(--ds-primary-200), var(--ds-primary-700));
+
   --ds-toast-secondary-bg: light-dark(var(--ds-gray-50), var(--ds-gray-800));
+  --ds-toast-secondary-border: light-dark(var(--ds-gray-200), var(--ds-gray-600));
+
   --ds-toast-success-bg: light-dark(var(--ds-success-50), var(--ds-gray-800));
+  --ds-toast-success-border: light-dark(var(--ds-success-200), var(--ds-success-700));
+
   --ds-toast-warning-bg: light-dark(var(--ds-warning-50), var(--ds-gray-800));
+  --ds-toast-warning-border: light-dark(var(--ds-warning-200), var(--ds-warning-700));
+
   --ds-toast-danger-bg: light-dark(var(--ds-danger-50), var(--ds-gray-800));
+  --ds-toast-danger-border: light-dark(var(--ds-danger-200), var(--ds-danger-700));
+
+  /* Input Colors */
+  --ds-input-bg: light-dark(#ffffff, var(--ds-gray-800));
+  --ds-input-border: light-dark(var(--ds-gray-300), var(--ds-gray-600));
+  --ds-input-border-hover: light-dark(var(--ds-gray-400), var(--ds-gray-500));
+  --ds-input-border-focus: var(--ds-primary-500);
+  --ds-input-text: var(--ds-text-primary);
+  --ds-input-placeholder: var(--ds-text-tertiary);
 
   /* Spacing Scale */
   --ds-spacing-xs: 0.25rem; /* 4px */
@@ -161,36 +187,42 @@
   --ds-radius-md: 0.5rem; /* 8px */
   --ds-radius-lg: 0.75rem; /* 12px */
   --ds-radius-xl: 1rem; /* 16px */
+  --ds-radius-2xl: 1.5rem; /* 24px */
   --ds-radius-full: 9999px;
 
   /* Shadows */
-  --ds-shadow-sm: 0 1px 2px 0 light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+  --ds-shadow-sm: 0 1px 2px 0 light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2));
 
   --ds-shadow-md:
-    0 4px 6px -1px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 2px 4px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+    0 4px 6px -1px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25)),
+    0 2px 4px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.1));
 
   --ds-shadow-lg:
-    0 10px 15px -3px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 4px 6px -2px light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+    0 10px 15px -3px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25)),
+    0 4px 6px -2px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1));
 
   --ds-shadow-xl:
-    0 20px 25px -5px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
+    0 20px 25px -5px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25)),
+    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.1));
 
-  --ds-tooltip-shadow: 0 0px 20px 5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --ds-shadow-2xl: 0 25px 50px -12px light-dark(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.4));
+
+  --ds-tooltip-shadow:
+    0 0px 20px 5px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3)),
+    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.1));
 
   --ds-select-shadow:
-    0 10px 20px -5px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
+    0 10px 20px -5px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25)),
+    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.1));
 
   --ds-toast-shadow:
-    0 0px 20px 5px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
+    0 0px 20px 5px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3)),
+    0 10px 10px -5px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.1));
 
   --ds-popover-shadow:
-    0 0px 20px 0px light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)),
-    0 10px 10px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.04));
+    0 0px 20px 0px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25)),
+    0 10px 10px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.1));
+
   /* Typography */
   --ds-font-size-xs: 0.75rem; /* 12px */
   --ds-font-size-sm: 0.875rem; /* 14px */
@@ -199,6 +231,26 @@
   --ds-font-size-xl: 1.25rem; /* 20px */
   --ds-font-size-2xl: 1.5rem; /* 24px */
   --ds-font-size-3xl: 1.875rem; /* 30px */
+  --ds-font-size-4xl: 2.25rem; /* 36px */
+  --ds-font-size-5xl: 3rem; /* 48px */
+
+  /* Line Heights */
+  --ds-leading-none: 1;
+  --ds-leading-tight: 1.25;
+  --ds-leading-snug: 1.375;
+  --ds-leading-normal: 1.5;
+  --ds-leading-relaxed: 1.625;
+  --ds-leading-loose: 2;
+
+  /* Font Weights */
+  --ds-font-weight-thin: 100;
+  --ds-font-weight-light: 300;
+  --ds-font-weight-normal: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+  --ds-font-weight-extrabold: 800;
+  --ds-font-weight-black: 900;
 
   /* Z-index Scale */
   --ds-z-dropdown: 1000;
@@ -208,21 +260,35 @@
   --ds-z-modal: 1050;
   --ds-z-popover: 1060;
   --ds-z-tooltip: 1070;
+  --ds-z-toast: 1080;
+
+  /* Transitions */
+  --ds-transition-fast: 150ms ease-in-out;
+  --ds-transition-normal: 250ms ease-in-out;
+  --ds-transition-slow: 350ms ease-in-out;
 }
 
-/* Updated main.css content */
-
-/* Импорт базовых стилей Vue */
-/* @import './base.css'; - Already included above */
-
-/* Базовая настройка приложения */
+/* Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 * {
   padding: 0;
   margin: 0;
 }
 
-/* Переопределение базовых стилей для интеграции с дизайн-системой */
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+}
+
 body {
   background: var(--ds-background);
   color: var(--ds-text-primary);
@@ -241,9 +307,94 @@ body {
     'Segoe UI Emoji',
     'Segoe UI Symbol',
     'Noto Color Emoji';
+  font-size: var(--ds-font-size-md);
+  line-height: var(--ds-leading-normal);
+  font-weight: var(--ds-font-weight-normal);
 }
 
-/* Базовые стили для интерактивных элементов */
+/* Remove default margins */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Lists */
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+/* Images */
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  vertical-align: middle;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tables */
+table {
+  text-indent: 0;
+  border-color: inherit;
+  border-collapse: collapse;
+}
+
+/* Focus styles */
 *:focus {
   outline: none;
 }
@@ -251,9 +402,10 @@ body {
 *:focus-visible {
   outline: 2px solid var(--ds-border-focus);
   outline-offset: 2px;
+  border-radius: var(--ds-radius-sm);
 }
 
-/* Стили для скроллбаров (Webkit) */
+/* Scrollbars (Webkit) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -261,24 +413,30 @@ body {
 
 ::-webkit-scrollbar-track {
   background: var(--ds-surface-secondary);
+  border-radius: var(--ds-radius-full);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--ds-border-secondary);
   border-radius: var(--ds-radius-full);
+  border: 2px solid var(--ds-surface-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ds-text-tertiary);
 }
 
-/* Стили для выделения текста */
+::-webkit-scrollbar-corner {
+  background: var(--ds-surface-secondary);
+}
+
+/* Text selection */
 ::selection {
   background-color: light-dark(var(--ds-primary-200), var(--ds-primary-800));
   color: light-dark(var(--ds-primary-800), var(--ds-primary-200));
 }
 
-/* Утилитарные классы */
+/* Utility Classes */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -295,4 +453,33 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.text-center {
+  text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+
+/* Responsive utilities */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode media query fallback for older browsers */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
 }
