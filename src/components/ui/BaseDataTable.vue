@@ -194,7 +194,7 @@ const props = withDefaults(defineProps<BaseTableProps>(), {
   fullWidth: true,
   hoverable: true,
   rowKey: undefined,
-  filterDebounce: 1000,
+  filterDebounce: 600,
 })
 
 export interface BaseTableEmits {
@@ -335,6 +335,7 @@ const handleFilterInput = (accessorKey: string): void => {
 }
 
 const handleFilterClear = (accessorKey: string): void => {
+  console.log('CLEAR')
   updateFilter(accessorKey, '')
 }
 </script>

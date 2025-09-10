@@ -109,6 +109,7 @@ const props = withDefaults(defineProps<BaseInputProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | number]
+  clear: [value: string | number]
   focus: [event: FocusEvent]
   blur: [event: FocusEvent]
   keydown: [event: KeyboardEvent]
@@ -137,6 +138,7 @@ const handleInput = (event: Event) => {
 
 const handleClear = () => {
   emit('update:modelValue', '')
+  emit('clear', '')
   inputRef.value?.focus()
 }
 </script>
