@@ -332,7 +332,7 @@ watch(internalValue, (newValue) => {
   align-items: center;
   gap: var(--ds-spacing-sm);
   width: 100%;
-  min-width: 0;
+  min-width: 0px;
 }
 
 .base-select-trigger-text {

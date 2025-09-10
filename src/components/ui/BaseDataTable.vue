@@ -65,7 +65,7 @@
 
       <tbody class="base-table-body">
         <!-- Пустое состояние -->
-        <tr v-if="isEmpty && !loading" class="base-table-empty-row">
+        <tr v-if="isEmpty" class="base-table-empty-row">
           <td :colspan="headers.length" class="base-table-empty">
             <slot name="empty">
               <div class="base-table-empty-content">
@@ -194,7 +194,7 @@ const props = withDefaults(defineProps<BaseTableProps>(), {
   fullWidth: true,
   hoverable: true,
   rowKey: undefined,
-  filterDebounce: 300,
+  filterDebounce: 1000,
 })
 
 export interface BaseTableEmits {
@@ -316,6 +316,7 @@ const getFilterInputType = (type?: Type): string => {
 }
 
 const updateFilter = (accessorKey: string, value: any): void => {
+  console.log('UPDATE FILTER', accessorKey, value)
   filterValues[accessorKey] = value
 
   // Очищаем предыдущий таймер для этого фильтра
@@ -351,14 +352,15 @@ const handleFilterClear = (accessorKey: string): void => {
   overflow-x: auto;
 }
 
-.base-table--full-width {
-  width: 100%;
-}
-
 .base-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: auto;
+}
+
+/* Базовые стили для sticky заголовка таблицы */
+.base-table-header-row {
+  box-shadow: var(--ds-shadow-md);
 }
 
 .base-table-body {
@@ -378,7 +380,8 @@ const handleFilterClear = (accessorKey: string): void => {
 }
 
 .base-table-row--filter {
-  background-color: var(--ds-surface);
+  background-color: var(--ds-surface-secondary);
+
   border-bottom: 2px solid var(--ds-border);
 }
 
@@ -406,9 +409,7 @@ const handleFilterClear = (accessorKey: string): void => {
 }
 
 .base-table-cell--filter {
-  background-color: var(--ds-surface);
   position: sticky;
-  top: var(--base-table-header-height, 48px);
   z-index: 9;
 }
 
@@ -479,28 +480,15 @@ const handleFilterClear = (accessorKey: string): void => {
 
 /* === НОВЫЕ СТИЛИ ДЛЯ ПУСТОГО СОСТОЯНИЯ === */
 .base-table-empty-row {
-  border-bottom: none !important;
+  border-bottom: none;
 }
 
 .base-table-empty {
   padding: var(--ds-spacing-3xl) var(--ds-spacing-xl);
   text-align: center;
-  background: linear-gradient(135deg, var(--ds-surface) 0%, var(--ds-surface-secondary) 100%);
+  background: var(--ds-surface);
   position: relative;
   overflow: hidden;
-}
-
-.base-table-empty::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
-  pointer-events: none;
 }
 
 .base-table-empty-content {
@@ -509,7 +497,6 @@ const handleFilterClear = (accessorKey: string): void => {
   align-items: center;
   gap: var(--ds-spacing-lg);
   position: relative;
-  z-index: 1;
   max-width: 400px;
   margin: 0 auto;
 }
@@ -533,7 +520,6 @@ const handleFilterClear = (accessorKey: string): void => {
 .base-table-empty-icon {
   color: var(--ds-text-tertiary);
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-  z-index: 1;
   position: relative;
   opacity: 0.7;
 }
@@ -561,38 +547,26 @@ const handleFilterClear = (accessorKey: string): void => {
 /* === НОВЫЕ СТИЛИ ДЛЯ ЗАГРУЗКИ === */
 .base-table-loading-row {
   border-bottom: none !important;
+  height: 100%;
 }
 
 .base-table-loading-cell {
   padding: 0;
-  position: relative;
 }
 
 .base-table-loading-overlay {
-  min-height: 200px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.base-table-loading-overlay::before {
-  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(59, 130, 246, 0.03) 50%,
-    transparent 70%
-  );
-  animation: shimmer 2s linear infinite;
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 .base-table-loading {
@@ -601,9 +575,8 @@ const handleFilterClear = (accessorKey: string): void => {
   align-items: center;
   gap: var(--ds-spacing-md);
   position: relative;
-  z-index: 2;
   padding: var(--ds-spacing-xl);
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--ds-background);
   border-radius: var(--ds-radius-xl);
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -649,7 +622,6 @@ const handleFilterClear = (accessorKey: string): void => {
 .base-table-loading-icon {
   color: var(--ds-accent-primary);
   animation: spin 2s linear infinite;
-  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
 }
 
 .base-table-loading-content {
@@ -716,36 +688,6 @@ const handleFilterClear = (accessorKey: string): void => {
   }
   100% {
     transform: translateX(100%);
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .base-table-empty {
-    padding: var(--ds-spacing-xl) var(--ds-spacing-md);
-  }
-
-  .base-table-empty-title {
-    font-size: var(--ds-font-size-md);
-  }
-
-  .base-table-empty-subtitle {
-    font-size: var(--ds-font-size-xs);
-  }
-
-  .base-table-loading {
-    padding: var(--ds-spacing-lg);
-    margin: var(--ds-spacing-md);
-  }
-
-  .base-table-loading-spinner {
-    width: 48px;
-    height: 48px;
-  }
-
-  .base-table-loading-spinner-inner {
-    width: 40px;
-    height: 40px;
   }
 }
 </style>

@@ -16,7 +16,7 @@ const tableHeaders: BaseTableHeader[] = [
     accessorKey: 'id',
     name: 'ID',
     type: 'number',
-    width: '80px',
+    width: '70px',
     sortable: true,
     filterable: false,
   },
@@ -58,186 +58,95 @@ const tableHeaders: BaseTableHeader[] = [
   {
     accessorKey: 'actions',
     name: 'Действия',
-    width: '150px',
+    width: '110px',
     sortable: false,
     filterable: false,
   },
 ]
 
 // Исходные данные (не изменяются при фильтрации)
-const originalData = [
-  {
-    id: 1,
-    name: 'Иван',
-    fio: 'Петров',
-    email: 'ivan@example.com',
-    role: 'Админ',
-    createdAt: '2024-03-20',
-  },
-  {
-    id: 2,
-    name: 'Анна',
-    fio: 'Смирнова',
-    email: 'anna@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-04-25',
-  },
-  {
-    id: 3,
-    name: 'Сергей',
-    fio: 'Иванов',
-    email: 'sergey@example.com',
-    role: 'Модератор',
-    createdAt: '2024-06-22',
-  },
-  {
-    id: 4,
-    name: 'Ольга',
-    fio: 'Олейник',
-    email: 'olga@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-01',
-  },
-  {
-    id: 5,
-    name: 'Дмитрий',
-    fio: 'Сидоров',
-    email: 'dmitry@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-15',
-  },
-  {
-    id: 6,
-    name: 'Мария',
-    fio: 'Козлова',
-    email: 'maria@example.com',
-    role: 'Модератор',
-    createdAt: '2024-07-10',
-  },
-  {
-    id: 7,
-    name: 'Александр',
-    fio: 'Волков',
-    email: 'alex@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-20',
-  },
-  {
-    id: 8,
-    name: 'Екатерина',
-    fio: 'Белова',
-    email: 'kate@example.com',
-    role: 'Админ',
-    createdAt: '2024-05-15',
-  },
-  {
-    id: 9,
-    name: 'Максим',
-    fio: 'Орлов',
-    email: 'max@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-06-30',
-  },
-  {
-    id: 10,
-    name: 'Татьяна',
-    fio: 'Жукова',
-    email: 'tanya@example.com',
-    role: 'Модератор',
-    createdAt: '2024-07-25',
-  },
-  {
-    id: 11,
-    name: 'Владимир',
-    fio: 'Морозов',
-    email: 'vladimir@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-05',
-  },
-  {
-    id: 12,
-    name: 'Людмила',
-    fio: 'Соколова',
-    email: 'lyuda@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-04-10',
-  },
-  {
-    id: 13,
-    name: 'Андрей',
-    fio: 'Лебедев',
-    email: 'andrey@example.com',
-    role: 'Модератор',
-    createdAt: '2024-06-18',
-  },
-  {
-    id: 14,
-    name: 'Светлана',
-    fio: 'Попова',
-    email: 'svetlana@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-03',
-  },
-  {
-    id: 15,
-    name: 'Юрий',
-    fio: 'Захаров',
-    email: 'yury@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-12',
-  },
-  {
-    id: 16,
-    name: 'Наталья',
-    fio: 'Медведева',
-    email: 'natasha@example.com',
-    role: 'Админ',
-    createdAt: '2024-05-28',
-  },
-  {
-    id: 17,
-    name: 'Олег',
-    fio: 'Борисов',
-    email: 'oleg@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-08',
-  },
-  {
-    id: 18,
-    name: 'Ирина',
-    fio: 'Романова',
-    email: 'irina@example.com',
-    role: 'Модератор',
-    createdAt: '2024-06-14',
-  },
-  {
-    id: 19,
-    name: 'Павел',
-    fio: 'Васильев',
-    email: 'pavel@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-08-18',
-  },
-  {
-    id: 20,
-    name: 'Елена',
-    fio: 'Тихонова',
-    email: 'elena@example.com',
-    role: 'Пользователь',
-    createdAt: '2024-07-12',
-  },
-  {
-    id: 21,
-    name: 'Михаил',
-    fio: 'Крылов',
-    email: 'mikhail@example.com',
-    role: 'Модератор',
-    createdAt: '2024-08-22',
-  },
+// Массивы для генерации случайных значений
+const names = [
+  'Иван',
+  'Анна',
+  'Сергей',
+  'Ольга',
+  'Дмитрий',
+  'Мария',
+  'Александр',
+  'Екатерина',
+  'Максим',
+  'Татьяна',
+  'Владимир',
+  'Людмила',
+  'Андрей',
+  'Светлана',
+  'Юрий',
+  'Наталья',
+  'Олег',
+  'Ирина',
+  'Павел',
+  'Елена',
+  'Михаил',
 ]
 
-const ITEMS_PER_PAGE = 5
-const loading = ref(true)
+const lastNames = [
+  'Петров',
+  'Смирнова',
+  'Иванов',
+  'Олейник',
+  'Сидоров',
+  'Козлова',
+  'Волков',
+  'Белова',
+  'Орлов',
+  'Жукова',
+  'Морозов',
+  'Соколова',
+  'Лебедев',
+  'Попова',
+  'Захаров',
+  'Медведева',
+  'Борисов',
+  'Романова',
+  'Васильев',
+  'Тихонова',
+  'Крылов',
+]
+
+const roles = ['Админ', 'Пользователь', 'Модератор']
+
+// Функция для генерации случайной даты
+function getRandomDate(start = new Date(2024, 2), end = new Date()) {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
+    .toISOString()
+    .split('T')[0]
+}
+
+// Основная функция генератора
+function generateData(count) {
+  const data = []
+
+  for (let i = 1; i <= count; i++) {
+    data.push({
+      id: i,
+      name: names[Math.floor(Math.random() * names.length)],
+      fio: lastNames[Math.floor(Math.random() * lastNames.length)],
+      email: `${names[Math.floor(Math.random() * names.length)].toLowerCase()}@example.com`,
+      role: roles[Math.floor(Math.random() * roles.length)],
+      createdAt: getRandomDate(),
+    })
+  }
+
+  return data
+}
+
+// Пример использования:
+// Генерируем 10 случайных объектов
+const generatedData = generateData(100)
+
+const ITEMS_PER_PAGE = 15
+const loading = ref(false)
 const currentPage = ref(1)
 const currentFilters = ref<Record<string, any>>({})
 const currentSort = ref<{ key: string; direction: Sort }>({ key: '', direction: false })
@@ -316,7 +225,7 @@ function delay(ms: number) {
 
 // Вычисляемые свойства для обработанных данных
 const processedData = computed(() => {
-  let data = [...originalData]
+  let data = [...generatedData]
 
   // Применяем фильтры
   data = filterData(data, currentFilters.value)
@@ -390,9 +299,10 @@ const getRoleVariant = (role: string) => {
       <!-- Кастомный фильтр для роли -->
       <template #filter-role="{ value, updateFilter }">
         <BaseSelect
+          full-width
           :items="roleOptions"
           :model-value="value"
-          @update:model-value="updateFilter"
+          @update:model-value="(value) => updateFilter(value.value)"
           placeholder="Все роли"
           size="sm"
           clearable
@@ -452,14 +362,13 @@ const getRoleVariant = (role: string) => {
 .directions-view {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
+  gap: var(--ds-spacing-sm);
+  padding: 1rem 0 0 0;
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
 }
 
 .user-details h3 {

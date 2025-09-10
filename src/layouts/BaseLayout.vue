@@ -240,7 +240,6 @@ watch(
         <div class="container">
           <h1>{{ currentPageInfo.title }}</h1>
           <p>{{ currentPageInfo.description }}</p>
-          <p>Активная страница: {{ activeItem }}</p>
 
           <!-- Содержимое страниц можно отображать через слот -->
           <ToastProvider :duration="3000">
@@ -427,13 +426,11 @@ watch(
 }
 
 .container > h1 {
-  margin-bottom: var(--ds-spacing-md);
   color: var(--ds-text-primary);
   font-size: var(--ds-font-size-2xl);
 }
 
 .container > p {
-  margin-bottom: var(--ds-spacing-md);
   color: var(--ds-text-secondary);
   font-size: var(--ds-font-size-md);
 }

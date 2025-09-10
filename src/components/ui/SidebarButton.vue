@@ -31,5 +31,6 @@ const props = withDefaults(defineProps<SettingsButtonProps>(), {
     :disabled="disabled"
     :title="isCollapsed ? '' : title"
     :active="active"
+    :tooltipDelayDuration="0"
   />
 </template>

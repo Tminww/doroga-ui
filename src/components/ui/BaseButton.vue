@@ -1,5 +1,5 @@
 <template>
-  <BaseTooltip :content="tooltip" :side="tooltipSide">
+  <BaseTooltip :content="tooltip" :side="tooltipSide" :delayDuration="tooltipDelayDuration">
     <button
       :class="buttonClasses"
       :disabled="disabled"
@@ -51,6 +51,8 @@ export interface BaseButtonProps {
   tooltip?: string
   /** Позиция tooltip относительно элемента */
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+
+  tooltipDelayDuration?: number
 }
 
 const props = withDefaults(defineProps<BaseButtonProps>(), {

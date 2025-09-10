@@ -142,7 +142,7 @@ input {
   background-color: rgba(0, 0, 0, 0.5);
   inset: 0;
   animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
-
+  z-index: var(--ds-z-modal-backdrop);
   /* position: fixed;
   top: 0;
   left: 0;
@@ -160,6 +160,7 @@ input {
   background-color: var(--ds-button-secondary-bg);
   box-shadow: var(--ds-tooltip-shadow);
   border-radius: var(--ds-radius-lg);
+  z-index: var(--ds-z-modal);
 
   position: fixed;
   top: 50%;
