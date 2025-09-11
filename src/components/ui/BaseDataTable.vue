@@ -14,18 +14,18 @@
             <div class="base-table-header-content">
               <div class="base-table-header-wrapper">
                 <div class="base-table-header-title">{{ header.name }}</div>
-                <!-- Иконка сортировки -->
-                <BaseButton
-                  v-if="header.sortable !== false"
-                  @click="handleSort(header.accessorKey)"
-                  icon-only
-                  :icon-size="16"
-                  variant="ghost"
-                  size="sm"
-                  :left-icon="getSortIcon(getCurrentSort(header.accessorKey))"
-                  :class="getSortIconClass(getCurrentSort(header.accessorKey))"
-                />
               </div>
+              <!-- Иконка сортировки -->
+              <BaseButton
+                v-if="header.sortable !== false"
+                @click="handleSort(header.accessorKey)"
+                icon-only
+                :icon-size="16"
+                variant="ghost"
+                size="sm"
+                :left-icon="getSortIcon(getCurrentSort(header.accessorKey))"
+                :class="getSortIconClass(getCurrentSort(header.accessorKey))"
+              />
             </div>
           </th>
         </tr>
@@ -50,7 +50,8 @@
                   v-if="header.filterable !== false"
                   v-model="filterValues[header.accessorKey]"
                   :type="getFilterInputType(header.type)"
-                  :placeholder="`Поиск по ${header.name.toLowerCase()}...`"
+                  :placeholder="`Начать поиск`"
+                  left-icon="search"
                   size="sm"
                   clearable
                   @input="handleFilterInput(header.accessorKey)"
@@ -58,6 +59,7 @@
                   class="base-table-filter-input"
                 />
               </slot>
+              <TableFilter v-if="header.filterable !== false" />
             </div>
           </th>
         </tr>
@@ -141,6 +143,7 @@ import BaseIcon, { type IconName } from './BaseIcon.vue'
 import BasePopover from './BasePopover.vue'
 import BaseButton from './BaseButton.vue'
 import BaseInput from './BaseInput.vue'
+import TableFilter from '../widgets/TableFilter.vue'
 
 export type Sort = 'asc' | 'desc' | false
 export type Type = 'text' | 'number' | 'date' | 'boolean'
@@ -434,9 +437,12 @@ const handleFilterClear = (accessorKey: string): void => {
 }
 
 .base-table--md .base-table-cell--filter {
-  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
+  padding: var(--ds-spacing-xs) var(--ds-spacing-xs) var(--ds-spacing-xs) var(--ds-spacing-sm);
 }
 
+.base-table--md .base-table-cell--header {
+  padding: var(--ds-spacing-xs) var(--ds-spacing-xs) var(--ds-spacing-xs) var(--ds-spacing-md);
+}
 .base-table--lg .base-table-cell {
   padding: var(--ds-spacing-md) var(--ds-spacing-lg);
   font-size: var(--ds-font-size-md);
@@ -473,6 +479,7 @@ const handleFilterClear = (accessorKey: string): void => {
   width: 100%;
   display: flex;
   align-items: center;
+  gap: var(--ds-spacing-sm);
 }
 
 .base-table-filter-input {

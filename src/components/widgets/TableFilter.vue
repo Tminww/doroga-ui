@@ -4,12 +4,43 @@ import BaseButton from '../ui/BaseButton.vue'
 import NotificationBadge from '../ui/NotificationBadge.vue'
 import { ref } from 'vue'
 import BaseInput from '../ui/BaseInput.vue'
+import BaseSelect from '../ui/BaseSelect.vue'
 
 interface TableFilterProps {
   type?: 'text' | 'number' | 'date' | 'boolean'
   value?: string | number | boolean
   name?: string
 }
+
+interface Item {
+  icon: IconName
+  name: string
+  value: 'system' | 'light' | 'dark'
+}
+
+const items: Item[] = [
+  {
+    icon: 'monitor',
+    name: 'В начале',
+    value: 'system',
+  },
+  {
+    icon: 'sun',
+    name: 'В конце',
+    value: 'light',
+  },
+  {
+    icon: 'moon',
+    name: 'Содержит',
+    value: 'dark',
+  },
+]
+
+const selected = ref<Item>({
+  icon: 'menu',
+  name: 'Системная',
+  value: 'system',
+})
 
 const props = defineProps<TableFilterProps>()
 const emit = defineEmits<{
@@ -29,17 +60,13 @@ const handleClear = () => {
 </script>
 
 <template>
-  <BasePopover>
-    <NotificationBadge :has-notification="value ? true : false">
-      <BaseButton icon-only :icon-size="16" variant="ghost" size="sm" left-icon="filter" />
-    </NotificationBadge>
-
-    <template #content>
-      <BaseInput :label="name" :type v-model="inputValue" size="sm" clearable />
-    </template>
-    <template #close>
-      <BaseButton title="Очистить" size="sm" variant="danger" @click="handleClear" />
-      <BaseButton title="Применить" size="sm" @click="handleInput"
-    /></template>
-  </BasePopover>
+  <BaseSelect
+    :items="items"
+    v-model="selected"
+    :icon-only="true"
+    variant="secondary"
+    tooltip="Цветовая тема"
+    tooltip-side="bottom"
+    :icon-size="14"
+  />
 </template>

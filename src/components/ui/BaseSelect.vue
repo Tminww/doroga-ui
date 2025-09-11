@@ -308,6 +308,9 @@ watch(internalValue, (newValue) => {
   white-space: nowrap;
   background-color: transparent;
   color: var(--ds-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-family: inherit;
+
   min-width: 0;
 }
 
@@ -330,6 +333,7 @@ watch(internalValue, (newValue) => {
 .base-select-trigger-content {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--ds-spacing-sm);
   width: 100%;
   min-width: 0px;
@@ -356,13 +360,13 @@ watch(internalValue, (newValue) => {
 .base-select-trigger--sm {
   padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
   font-size: var(--ds-font-size-xs);
-  min-height: 1rem;
+  min-height: 1.7rem;
 }
 
 .base-select-trigger--md {
   padding: var(--ds-spacing-sm);
   font-size: var(--ds-font-size-sm);
-  min-height: 1.5rem;
+  min-height: 1.7rem;
 }
 
 .base-select-trigger--lg {
@@ -478,7 +482,7 @@ watch(internalValue, (newValue) => {
   display: flex;
   align-items: center;
   height: 30px;
-  padding: 0 35px 0 5px;
+  padding: 0 35px 0 8px;
   position: relative;
   user-select: none;
   cursor: pointer;
@@ -514,7 +518,7 @@ watch(internalValue, (newValue) => {
 
 .base-select-item-indicator {
   position: absolute;
-  right: 0;
+  right: 5px;
   width: 20px;
   height: 20px;
   display: inline-flex;

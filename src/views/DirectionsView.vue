@@ -300,6 +300,7 @@ const getRoleVariant = (role: string) => {
       <template #filter-role="{ value, updateFilter }">
         <BaseSelect
           full-width
+          left-icon="search"
           :items="roleOptions"
           :model-value="value"
           @update:model-value="(value) => updateFilter(value.value)"
