@@ -398,7 +398,7 @@
               class="shadow-example"
               :style="{
                 boxShadow: `var(--ds-shadow-${shadow})`,
-                borderRadius: 'var(--ds-radius-lg)',
+                borderRadius: 'var(--ds-radius-md)',
               }"
             ></div>
             <span class="shadow-label">{{ `--ds-shadow-${shadow}` }}</span>
@@ -602,7 +602,7 @@ const strokeWidth = ref(2)
 .component-demo {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   padding: var(--ds-spacing-2xl);
   box-shadow: var(--ds-shadow-sm);
   margin-bottom: var(--ds-spacing-2xl);
@@ -638,7 +638,7 @@ const strokeWidth = ref(2)
   max-width: 300px;
   padding: var(--ds-spacing-2xl);
   background: var(--ds-surface-secondary);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   border: 1px solid var(--ds-border);
 }
 

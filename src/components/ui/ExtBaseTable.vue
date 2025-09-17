@@ -262,7 +262,7 @@ const updateFilter = (accessorKey, value) => {
   position: relative;
 
   border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   overflow: hidden;
   background-color: var(--ds-surface);
 }
@@ -395,7 +395,7 @@ const updateFilter = (accessorKey, value) => {
   font-size: var(--ds-font-size-sm);
   gap: var(--ds-spacing-sm);
   background-color: var(--ds-surface);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   box-shadow: var(--ds-shadow-md);
   border: 1px solid var(--ds-border);
 }

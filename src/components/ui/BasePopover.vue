@@ -79,7 +79,7 @@ input {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
   box-shadow: var(--ds-popover-shadow);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   padding: 10px 10px;
   /* width: 260px; */
 

@@ -42,21 +42,21 @@ export interface BaseTooltipProps {
 const props = withDefaults(defineProps<BaseTooltipProps>(), {
   side: 'top',
   align: 'center',
-  sideOffset: 4,
+  sideOffset: 2,
   delayDuration: 1000,
 })
 </script>
 
 <style scoped>
 :deep(.tooltip-content) {
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   border: 1px solid var(--ds-border);
   padding: 10px 15px;
   font-size: 15px;
   line-height: 1;
-  color: var(--ds-button-secondary-text);
-  background-color: var(--ds-button-secondary-bg);
-  box-shadow: var(--ds-tooltip-shadow);
+  color: var(--ds-surface-secondary);
+  background-color: var(--ds-background-secondary-invert);
+  /* box-shadow: var(--ds-tooltip-shadow); */
   user-select: none;
   animation-duration: 400ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
@@ -77,7 +77,9 @@ const props = withDefaults(defineProps<BaseTooltipProps>(), {
 }
 
 :deep(.tooltip-arrow) {
-  fill: var(--ds-button-secondary-bg);
+  fill: var(--ds-background-secondary-invert);
+  height: 8px;
+  width: 15px;
 }
 
 @keyframes slideUpAndFade {

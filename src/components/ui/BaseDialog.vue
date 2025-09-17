@@ -159,7 +159,7 @@ input {
 .dialog-content {
   background-color: var(--ds-button-secondary-bg);
   box-shadow: var(--ds-tooltip-shadow);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   z-index: var(--ds-z-modal);
 
   position: fixed;
@@ -173,7 +173,7 @@ input {
   animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 
   /* background-color: var(--ds-surface);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   padding: var(--ds-spacing-xl);
   max-width: 500px;
   width: 100%;

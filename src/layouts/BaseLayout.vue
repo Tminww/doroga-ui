@@ -439,7 +439,7 @@ watch(
   padding: var(--ds-spacing-xl);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   text-align: center;
   margin-bottom: var(--ds-spacing-lg);
 }

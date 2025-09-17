@@ -174,7 +174,7 @@ const handleRowClick = (
 .base-table-container {
   position: relative;
   border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-md);
   overflow: hidden;
   background-color: var(--ds-surface);
 }

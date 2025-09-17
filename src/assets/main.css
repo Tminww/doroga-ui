@@ -77,14 +77,20 @@
 
   /* Semantic Colors using light-dark() function */
   --ds-background: light-dark(var(--ds-gray-50), var(--ds-gray-900));
-  --ds-background-secondary: light-dark(#ffffff, var(--ds-gray-800));
-  --ds-surface: light-dark(#ffffff, var(--ds-gray-800));
+  --ds-background-invert: light-dark(var(--ds-gray-900), var(--ds-gray-50));
+  --ds-background-secondary: light-dark(var(--ds-gray-50), var(--ds-gray-800));
+  --ds-background-secondary-invert: light-dark(var(--ds-gray-800), var(--ds-gray-50));
+
+  --ds-surface: light-dark(var(--ds-gray-50), var(--ds-gray-800));
+  --ds-surface-invert: light-dark(var(--ds-gray-800), var(--ds-gray-50));
+
   --ds-surface-secondary: light-dark(var(--ds-gray-50), var(--ds-gray-750));
+  --ds-surface-secondary-invert: light-dark(var(--ds-gray-750), var(--ds-gray-50));
 
   --ds-text-primary: light-dark(var(--ds-gray-900), var(--ds-gray-50));
   --ds-text-secondary: light-dark(var(--ds-gray-600), var(--ds-gray-300));
   --ds-text-tertiary: light-dark(var(--ds-gray-500), var(--ds-gray-400));
-  --ds-text-inverse: light-dark(#ffffff, var(--ds-gray-900));
+  --ds-text-inverse: light-dark(var(--ds-gray-50), var(--ds-gray-900));
   --ds-text-accent: var(--ds-primary-600);
 
   --ds-border: light-dark(var(--ds-gray-200), var(--ds-gray-600));
@@ -100,24 +106,24 @@
   /* Component-specific colors using light-dark() */
   --ds-button-primary-bg: light-dark(var(--ds-primary-600), var(--ds-primary-500));
   --ds-button-primary-bg-hover: var(--ds-primary-700);
-  --ds-button-primary-text: #ffffff;
+  --ds-button-primary-text: var(--ds-gray-50);
 
-  --ds-button-secondary-bg: light-dark(#ffffff, var(--ds-gray-700));
+  --ds-button-secondary-bg: light-dark(var(--ds-gray-50), var(--ds-gray-700));
   --ds-button-secondary-bg-hover: light-dark(var(--ds-gray-50), var(--ds-gray-600));
   --ds-button-secondary-text: light-dark(var(--ds-gray-700), var(--ds-gray-100));
   --ds-button-secondary-border: light-dark(var(--ds-gray-200), var(--ds-gray-600));
 
   --ds-button-success-bg: var(--ds-success-600);
   --ds-button-success-bg-hover: var(--ds-success-700);
-  --ds-button-success-text: #ffffff;
+  --ds-button-success-text: var(--ds-gray-50);
 
   --ds-button-warning-bg: var(--ds-warning-600);
   --ds-button-warning-bg-hover: var(--ds-warning-700);
-  --ds-button-warning-text: #ffffff;
+  --ds-button-warning-text: var(--ds-gray-50);
 
   --ds-button-danger-bg: var(--ds-danger-600);
   --ds-button-danger-bg-hover: var(--ds-danger-700);
-  --ds-button-danger-text: #ffffff;
+  --ds-button-danger-text: var(--ds-gray-50);
 
   /* Ghost Button Colors */
   --ds-button-ghost-bg-hover: light-dark(var(--ds-gray-100), var(--ds-gray-700));
@@ -164,7 +170,7 @@
   --ds-toast-danger-border: light-dark(var(--ds-danger-200), var(--ds-danger-700));
 
   /* Input Colors */
-  --ds-input-bg: light-dark(#ffffff, var(--ds-gray-800));
+  --ds-input-bg: light-dark(var(--ds-gray-50), var(--ds-gray-800));
   --ds-input-border: light-dark(var(--ds-gray-300), var(--ds-gray-600));
   --ds-input-border-hover: light-dark(var(--ds-gray-400), var(--ds-gray-500));
   --ds-input-border-focus: var(--ds-primary-500);
